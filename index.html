@@ -479,15 +479,35 @@
 
     // === SYNC TO GOOGLE FORM ===
     function syncToGoogleForm(type, data) {
-      const formData = new FormData();
-      formData.append(ENTRY_TYPE, type);
-      formData.append(ENTRY_DATA, JSON.stringify(data));
+      // Method 1: Iframe submission (most reliable)
+      const iframe = document.createElement('iframe');
+      iframe.name = 'hiddenFrame';
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
       
-      fetch(FORM_URL, {
-        method: 'POST',
-        body: formData,
-        mode: 'no-cors'
-      }).catch(() => {});
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = FORM_URL + '?usp=pp_url';
+      form.target = 'hiddenFrame';
+      
+      const typeInput = document.createElement('input');
+      typeInput.name = ENTRY_TYPE;
+      typeInput.value = type;
+      
+      const dataInput = document.createElement('input');
+      dataInput.name = ENTRY_DATA;
+      dataInput.value = JSON.stringify(data);
+      
+      form.appendChild(typeInput);
+      form.appendChild(dataInput);
+      document.body.appendChild(form);
+      
+      form.submit();
+      
+      setTimeout(() => {
+        document.body.removeChild(form);
+        document.body.removeChild(iframe);
+      }, 1000);
     }
 
     function syncState() {
