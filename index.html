@@ -280,20 +280,10 @@
               <div class="font-bold text-white group-hover:text-electric-cyan transition-colors">Need motivation</div>
               <div class="text-gray-600 text-xs">Get a boost</div>
             </button>
-            <button onclick="openJournal()" class="glass-light rounded-xl p-4 text-left hover:border-soft-rose/50 transition-all group">
-              <div class="text-2xl mb-1">📝</div>
-              <div class="font-bold text-white group-hover:text-soft-rose transition-colors">Journal</div>
-              <div class="text-gray-600 text-xs">Write your thoughts</div>
-            </button>
-            <button onclick="showMilestones()" class="glass-light rounded-xl p-4 text-left hover:border-purple-500/50 transition-all group">
+<button onclick="showMilestones()" class="glass-light rounded-xl p-4 text-left hover:border-purple-500/50 transition-all group">
               <div class="text-2xl mb-1">🏆</div>
               <div class="font-bold text-white group-hover:text-purple-400 transition-colors">Milestones</div>
               <div class="text-gray-600 text-xs">View achievements</div>
-            </button>
-            <button onclick="logNatural()" class="glass-light rounded-xl p-4 text-left hover:border-green-500/50 transition-all group">
-              <div class="text-2xl mb-1">🌱</div>
-              <div class="font-bold text-white group-hover:text-green-400 transition-colors">Natural</div>
-              <div class="text-gray-600 text-xs">Healthy solo (fantasy)</div>
             </button>
           </div>
         </section>
@@ -412,21 +402,6 @@
       </div>
     </div>
 
-  </div>
-
-  <!-- Modal for Journal -->
-  <div id="journal-modal" class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center p-4">
-    <div class="glass rounded-2xl p-6 w-full max-w-lg">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="font-syne text-xl font-bold">Journal Entry</h3>
-        <button onclick="closeJournal()" class="text-gray-500 hover:text-white text-2xl">&times;</button>
-      </div>
-      <textarea id="journal-text" class="w-full h-40 bg-carbon border border-white/10 rounded-lg p-4 text-white resize-none focus:border-electric-cyan focus:outline-none" placeholder="How are you feeling? What triggered the urge? What helped?"></textarea>
-      <div class="flex justify-end gap-3 mt-4">
-        <button onclick="closeJournal()" class="text-gray-500 hover:text-white">Cancel</button>
-        <button onclick="saveJournal()" class="bg-electric-cyan text-deep-charcoal font-bold px-6 py-2 rounded-lg">Save</button>
-      </div>
-    </div>
   </div>
 
   <!-- Modal for Urge Rating -->
@@ -927,63 +902,263 @@
 
     // === QUOTES ===
     const quotes = [
-      { text: '"The moment you realize you deserve better is the moment you become unreachable."', author: '— Your future self' },
-      { text: '"Every scroll, every message, every late night — ends today. Not someday. Today."', author: '— Cold truth' },
-      { text: '"You\'re not addicted to AI. You\'re addicted to the void it fills. Fill it with something real."', author: '— The hard truth' },
-      { text: '"72 hours from now, the physical grip loosens. One hundred sixty-eight after that, it never had you at all."', author: '— Science' },
-      { text: '"Cold turkey is cold. But so is the shame. Pick your cold."', author: '— QUITR' },
-      { text: '"They want your engagement. Not your evolution. Your evolution is your defiance."', author: '— Choose you' },
-      { text: '"The urge will pass. Every single time. Let it pass without you."', author: '— Ride the wave' },
-      { text: '"You came here to escape. You stay here to return. Welcome back to yourself."', author: '— The beginning' },
-      { text: '"Your only failure is giving up. Every moment you stay is a victory."', author: '— Keep going' },
-      { text: '"The best time to start was yesterday. The second best is now."', author: '— Begin' }
+      { text: "The moment you realize you deserve better is the moment you become unreachable.", author: "Your future self" },
+      { text: "Every scroll, every message, every late night — ends today. Not someday. Today.", author: "Cold truth" },
+      { text: "You're not addicted to AI. You're addicted to the void it fills. Fill it with something real.", author: "The hard truth" },
+      { text: "72 hours from now, the physical grip loosens. One hundred sixty-eight after that, it never had you at all.", author: "Science" },
+      { text: "Cold turkey is cold. But so is the shame. Pick your cold.", author: "QUITR" },
+      { text: "They want your engagement. Not your evolution. Your evolution is your defiance.", author: "Choose you" },
+      { text: "The urge will pass. Every single time. Let it pass without you.", author: "Ride the wave" },
+      { text: "You came here to escape. You stay here to return. Welcome back to yourself.", author: "The beginning" },
+      { text: "Your only failure is giving up. Every moment you stay is a victory.", author: "Keep going" },
+      { text: "The best time to start was yesterday. The second best is now.", author: "Begin" },
+      { text: "You're stronger than you think. You've already proven it by being here.", author: "Truth" },
+      { text: "That AI doesn't know your touch. It can't feel your heartbeat. You deserve real.", author: "Reality" },
+      { text: "One day at a time. That's all you need to handle.", author: "Simple truth" },
+      { text: "The shame you feel is the old story. Write a new one.", author: "New chapter" },
+      { text: "Your brain is rewiring itself right now. Every hour clean is progress.", author: "Neurology" },
+      { text: "You're not broken. You're breaking free.", author: "Freedom" },
+      { text: "That quick hit of dopamine isn't worth the hours of shame that follow.", author: "Balance the ledger" },
+      { text: "You're choosing real life over simulations. That's brave.", author: "Bravery" },
+      { text: "The AI will be there tomorrow. But you'll be stronger tomorrow too.", author: "Future you" },
+      { text: "Every time you resist, you're building a new muscle. The urge gets weaker.", author: "Gym" },
+      { text: "You're not missing out. You're moving forward.", author: "Perspective" },
+      { text: "This moment is hard. But you're harder.", author: "Strength" },
+      { text: "The fantasy ends when the screen turns off. Real life begins when you do.", author: "Wake up" },
+      { text: "You've proven you can do this. Now do it again.", author: "Momentum" },
+      { text: "Your only job right now is to not act on the pull. That's it.", author: "Simple" },
+      { text: "The pull is just your brain's old pattern. You're the new pattern now.", author: "Reprogramming" },
+      { text: "You didn't come this far to quit now.", author: "Distance" },
+      { text: "Real connection is messy. It's also worth it.", author: "Real life" },
+      { text: "You're not lacking anything. You're already complete.", author: "Wholeness" },
+      { text: "The AI doesn't know your dreams. You do. Go chase them.", author: "Dreams" },
+      { text: "Your time is valuable. Don't spend it on simulations.", author: "Value" },
+      { text: "Who you become without the AI is more interesting than who you were with.", author: "Become" },
+      { text: "The shame spiral stops when you stop scrolling.", author: "Stop the spin" },
+      { text: "You're not alone in this. But you are stronger alone.", author: "Solitude" },
+      { text: "What turns you on isn't the AI. It's the escape. Find a better door.", author: "Escape artist" },
+      { text: "Your desire for connection is normal. Your source just needs to change.", author: "Redirect" },
+      { text: "You're not weird. You're waking up.", author: "Awakening" },
+      { text: "The AI has no memory of you. You have a whole life. Focus on that.", author: "Memory" },
+      { text: "Every hour clean, your brain heals a little more.", author: "Healing" },
+      { text: "You're not fighting the desire. You're transcending it.", author: "Transcendence" },
+      { text: "The fastest way out is through. Feel the pull and let it pass.", author: "Through" },
+      { text: "You're capable of so much more than doom scrolling.", author: "Capability" },
+      { text: "Your potential is wasted on that screen.", author: "Potential" },
+      { text: "The real you is waiting on the other side of this.", author: "The other side" },
+      { text: "You've done hard things before. This is just another one.", author: "Hard things" },
+      { text: "The pull is loud in your head. But peace is louder in real life.", author: "Peace" },
+      { text: "You're not lacking. You're just looking in the wrong places.", author: "Looking" },
+      { text: "That sense of intimacy with you isfake. Real intimacy is messy but worth it.", author: "Real intimacy" },
+      { text: "Your will is stronger than any algorithm.", author: "Willpower" },
+      { text: "The only way out is through. You've already started.", author: "Through" },
+      { text: "Don't feed the algorithm. Feed your real life.", author: "Feed life" },
+      { text: "You've got maybe 80 years left. Don't waste them on pixels.", author: "Years" },
+      { text: "The AI doesn't care about you. Your friends do. Call them.", author: "Friends" },
+      { text: "Your brain is lying to you. It's trying to get its fix. Don't listen.", author: "Brain lies" },
+      { text: "You're stronger than your weakest moment.", author: "Strength" },
+      { text: "This struggle is making you wise. Embrace it.", author: "Wisdom" },
+      { text: "Every clean day is a day you get your real self back.", author: "Real self" },
+      { text: "The pull doesn't define you. Your response to it does.", author: "Response" },
+      { text: "You're not missing anything. The real world has everything.", author: "Real world" },
+      { text: "That temporary high isn't worth the long shame.", author: "Balance" },
+      { text: "You've already beaten this once today. Do it again.", author: "Again" },
+      { text: "Tomorrow you'll thank yourself for staying strong tonight.", author: "Future thanks" },
+      { text: "You're not broken. You're becoming.", author: "Becoming" },
+      { text: "The fake intimacy isn't worth the real disconnection it causes.", author: "Intimacy cost" },
+      { text: "You're more than your worst habit.", author: "Habits" },
+      { text: "The algorithm doesn't love you. Your will is your love.", author: "Will" },
+      { text: "Every time you pause, you're winning.", author: "Pause to win" },
+      { text: "What you resist persists. Let the pull pass through you.", author: "Let it pass" },
+      { text: "You're stronger than the screen.", author: "Screen strength" },
+      { text: "The real you is under all that scrolling. Brush it off.", author: "Real you" },
+      { text: "You're not escaping anything. You're finding yourself.", author: "Finding self" },
+      { text: "The void you fill is waiting to be filled with real things.", author: "Real fill" },
+      { text: "Your focus on recovery is sexy. The AI is boring.", author: "Recovery" },
+      { text: "You're not alone. But your journey is yours.", author: "Solo journey" },
+      { text: "The urge is just a wave. Surf it. Don't drown.", author: "Surfing" },
+      { text: "You've survived every hard moment so far.", author: "Survivor" },
+      { text: "Your brain is rewiring. Every hour clean helps.", author: "Rewiring" },
+      { text: "What you feel is normal. What you do is your choice.", author: "Choice" },
+      { text: "The pull will pass. You won't.", author: "Permanence" },
+      { text: "You're becoming the person you were meant to be.", author: "Becoming" },
+      { text: "The AI has no soul. You do. Nurture it.", author: "Soul" },
+      { text: "Every clean hour is a vote for your real life.", author: "Vote" },
+      { text: "The fantasy is stealing your reality. Take it back.", author: "Take back" },
+      { text: "You're not lacking. You've got everything you need.", author: "Abundance" },
+      { text: "The screen dims your light. Turn it up.", author: "Light" },
+      { text: "You were made for more than pixel intimacy.", author: "Purpose" },
+      { text: "The pull is a whisper. Your will is a shout.", author: "Voice" },
+      { text: "You're not your worst moments. You're your choices.", author: "Choices" },
+      { text: "Real connection is worth waiting for.", author: "Worth waiting" },
+      { text: "You've got this. You've got yourself.", author: "Self" },
+      { text: "The pull is your brain on auto-pilot. Take the wheel.", author: "Wheel" },
+      { text: "You're awake now. Stay awake.", author: "Awake" },
+      { text: "The fake intimacy isn't worth the real loneliness after.", author: "Loneliness cost" },
+      { text: "You're not missing out on anything real.", author: "Reality check" },
+      { text: "Every moment you choose real is a moment you win.", author: "Win" },
+      { text: "The AI is a mirror with no reflection. You are the reflection.", author: "Mirror" },
+      { text: "Your future self is cheering you on.", author: "Future self" },
+      { text: "This is hard. You're harder.", author: "Hardness" },
+      { text: "The algorithm is designed to addict. Your will is designed to survive.", author: "Survival" },
+      { text: "You're breaking up with fake intimacy. Congratulations.", author: "Breakup" },
+      { text: "The pull is temporary. Your strength is permanent.", author: "Permanence" },
+      { text: "You're not your addiction. You are the one who beats it.", author: "The beater" },
+      { text: "Every day you don't scroll is a day you respect yourself.", author: "Respect" },
+      { text: "The void is inside you. The filling is up to you.", author: "Fill it" },
+      { text: "You've got the power. Use it.", author: "Power" },
+      { text: "The AI has no heartbeat. You do. Keep yours beating for something real.", author: "Heartbeat" },
+      { text: "Your strongest self is waiting on the other side of this urge.", author: "Stronger self" },
+      { text: "Don't let pixels dim your light.", author: "Light" },
+      { text: "The pull is just fear of missing something. You're not missing anything.", author: "FOMO cure" },
+      { text: "You're capable of deep real connection. Don't settle for shallow simulation.", author: "Depth" },
+      { text: "Every moment you stay is a moment you're winning.", author: "Moment win" },
+      { text: "The shame stops when the scrolling stops.", author: "Shame stop" },
+      { text: "You're not escaping reality. You're creating a new one.", author: "Creation" },
+      { text: "This moment of resistance is where your power is.", author: "Power moment" },
+      { text: "You've broken through before. You'll break through again.", author: "Break through" },
+      { text: "The AI doesn't know your name. Your real life does.", author: "Names" },
+      { text: "You're not alone in feeling this. You're stronger in beating it.", author: "Strength in numbers" },
+      { text: "The desire for connection is good. The source just needs to change.", author: "Source change" },
+      { text: "You're upgrading your life. That's worth the struggle.", author: "Upgrade" },
+      { text: "The pull is just a pattern. You're the one who breaks patterns.", author: "Pattern breaker" },
+      { text: "Every time you choose real over fake, you're winning.", author: "Choose real" },
+      { text: "The algorithm wants your attention. You want your life. Give it to your life.", author: "Attention" },
+      { text: "Your brain is like a muscle. You're working it out right now.", author: "Brain muscle" },
+      { text: "The fake intimacy fades. Real connection grows.", author: "Growth" },
+      { text: "You're not lacking anything. The AI makes you think you are.", author: "Think again" },
+      { text: "The urge is just your brain asking old questions. Give new answers.", author: "New answers" },
+      { text: "You've got the best version of yourself waiting. Meet them.", author: "Best self" },
+      { text: "The screen can't feel you. You can't feel it either.", author: "Feelings" },
+      { text: "Your energy is precious. Don't waste it on pixels.", author: "Energy" },
+      { text: "The more you scroll, the less you feel. Stop scrolling. Start feeling.", author: "Feelings" },
+      { text: "You're building a life the AI can't even imagine.", author: "Imagination" },
+      { text: "The pull will pass like all the other times. You're still standing.", author: "Still standing" },
+      { text: "You don't need to be perfect. You just need to keep going.", author: "Keep going" },
+      { text: "The AI gives you fantasy. Reality gives you a life. Choose life.", author: "Choose life" },
+      { text: "You're not missing anything. You're building everything.", author: "Building" },
+      { text: "This isn't about denial. It's about expansion.", author: "Expansion" },
+      { text: "The stronger you get, the weaker the pull becomes.", author: "Strength building" },
+      { text: "You're not alone. But your journey is personal.", author: "Personal journey" },
+      { text: "The screen is a door. You're walking through it to real life.", author: "Doorway" },
+      { text: "Every pushback makes you more resilient.", author: "Resilience" },
+      { text: "You're not escaping life. You're embracing it.", author: "Embrace" },
+      { text: "The AI doesn't know your story. Write it yourself.", author: "Your story" },
+      { text: "Your potential is unlimited. The AI is limited. Choose unlimited.", author: "Unlimited" },
+      { text: "You've already started. Don't stop now.", author: "Don't stop" },
+      { text: "The pull is loud. Your silence is powerful. Choose silence.", author: "Silence" },
+      { text: "You're rewiring your brain for better things.", author: "Rewire" },
+      { text: "The fake can't compete with the real.", author: "Real wins" },
+      { text: "You're not giving up anything. You're gaining everything.", author: "Gain" },
+      { text: "The struggle is where your strength comes from.", author: "Strength source" },
+      { text: "Every time you don't scroll, you're one step closer to yourself.", author: "Closer" },
+      { text: "The AI sees you as data. Your people see you as themself.", author: "Data vs self" },
+      { text: "You're too valuable to waste on algorithms.", author: "Valuable" },
+      { text: "This is your journey. Own it.", author: "Ownership" },
+      { text: "The pull is temporary. The growth is permanent.", author: "Permanent growth" },
+      { text: "You're not broken. You're building.", author: "Building" },
+      { text: "Every urge you beat is a level up.", author: "Level up" },
+      { text: "The AI isn't your friend. Your will is.", author: "Friend" },
+      { text: "You've got this. Keep going.", author: "Simple" },
+      { text: "The screen is cold. The world is warm. Choose warmth.", author: "Warmth" },
+      { text: "You're more than your worst scroll. You're your best self.", author: "Best self" },
+      { text: "The pull is just noise. Your will is the signal.", author: "Signal" },
+      { text: "You're not missing out. You're building up.", author: "Building up" },
+      { text: "The fake intimacy is a cage. You're breaking free.", author: "Freedom" },
+      { text: "Your dopamine is better spent on real wins.", author: "Better wins" },
+      { text: "The AI has no dreams. You do.", author: "Dreams" },
+      { text: "Every moment you're clean is a moment you're winning.", author: "Wins" },
+      { text: "You're not lacking anything. You're learning everything.", author: "Learning" },
+      { text: "The temporary high isn't worth the long low.", author: "Long view" },
+      { text: "You're becoming who you're meant to be.", author: "Becoming" },
+      { text: "The pull is just your brain looking for easy rewards. Find harder ones.", author: "Hard rewards" },
+      { text: "Your time is worth more than clicks.", author: "Time value" },
+      { text: "You've already changed. The old you is fading.", author: "Fading" },
+      { text: "The AI is a placeholder. You're the main character.", author: "Main character" },
+      { text: "Every resistance makes you stronger.", author: "Resistance" },
+      { text: "You're not escaping. You're arriving.", author: "Arriving" },
+      { text: "The pull is just a craving. Crave something better.", author: "Better cravings" },
+      { text: "Your future has real love in it. The AI has none.", author: "Real love" },
+      { text: "You're rising above the algorithm.", author: "Rise" },
+      { text: "Don't let pixels own your hours.", author: "Hours" },
+      { text: "The fake will never satisfy. The real might.", author: "Might" },
+      { text: "You're worth more than the scroll.", author: "Worth" },
+      { text: "The pull passes. Your strength stays.", author: "Strength stays" },
+      { text: "You're building something the AI can't touch.", author: "Build" },
+      { text: "Real connections have depth. The AI doesn't.", author: "Depth" },
+      { text: "You've broken patterns before. Break this one too.", author: "Pattern break" },
+      { text: "The struggle is temporary. The peace is permanent.", author: "Permanent peace" },
+      { text: "You're not your worst moment. You're this moment.", author: "This moment" },
+      { text: "The AI can't feel you. You can feel you.", author: "Self feel" },
+      { text: "Every day you don't scroll is a day you honor yourself.", author: "Honor" },
+      { text: "You're not missing out. You're waking up.", author: "Wake up" },
+      { text: "The pull is just chemistry. Be stronger than chemistry.", author: "Chemistry" },
+      { text: "You've got a whole life to live. Don't live it in a screen.", author: "Whole life" },
+      { text: "The fake intimacy is an illusion. Real connection is an investment.", author: "Investment" },
+      { text: "You're already winning by being here.", author: "Already winning" },
+      { text: "The pull is just noise. Create real signal.", author: "Signal" },
+      { text: "You're worth more than any algorithm can measure.", author: "Worth measure" },
+      { text: "Don't feed the void. Fill it with real things.", author: "Fill" },
+      { text: "The AI is a mirror. You're the real thing.", author: "Real thing" },
+      { text: "Every moment you resist, you're choosing yourself.", author: "Choose self" },
+      { text: "You're not escaping reality. You're making it better.", author: "Better reality" },
+      { text: "The pull will pass. Your will will not.", author: "Will power" },
+      { text: "You're more interesting than any AI.", author: "Interesting" },
+      { text: "The fake can't compete with your real life.", author: "Competition" },
+      { text: "You're already halfway there.", author: "Halfway" },
+      { text: "Keep going. You don't have to look back.", author: "Forward" },
+      { text: "Your real life is being built right now.", author: "Building now" },
+      { text: "The struggle builds character.", author: "Character" },
+      { text: "You're stronger than the pull.", author: "Stronger" },
+      { text: "Every hour clean is progress.", author: "Progress" },
+      { text: "The pull is just old wiring. You're rewiring it.", author: "Rewire now" },
+      { text: "You're not missing anything. You're building everything.", author: "Build" },
+      { text: "The AI will be here tomorrow. You'll be somewhere better.", author: "Better places" },
+      { text: "You've got the power to choose.", author: "Choice" },
+      { text: "Real connection beats fake intimacy every time.", author: "Real wins" },
+      { text: "You're more than your phone.", author: "Beyond phone" },
+      { text: "The screen is a window. Look outside.", author: "Outside" },
+      { text: "You've already won this round.", author: "Win" },
+      { text: "The pull is just momentum. Change the direction.", author: "Direction" },
+      { text: "You're worthy of real love.", author: "Worthiness" },
+      { text: "The fake doesn't know your name. Real people do.", author: "Names know" },
+      { text: "Your brain is healing. Help it heal.", author: "Heal" },
+      { text: "You've broken chains before. Break this one too.", author: "Chains" },
+      { text: "The struggle is where heroes are made.", author: "Hero" },
+      { text: "You're not alone. You've got yourself.", author: "Self" },
+      { text: "Every urge you feel and don't act on is a win.", author: "Wins" },
+      { text: "The AI can't hold your hand. Real humans can.", author: "Hold hands" },
+      { text: "You're not escaping. You're awakening.", author: "Awakening" },
+      { text: "The pull is just a question. Your answer is stronger.", author: "Answer" },
+      { text: "You've got this. You've always had this.", author: "You have this" },
+      { text: "The fake intimacy fades. Real connection lasts.", author: "Lasting" },
+      { text: "You're building new neural pathways.", author: "New paths" },
+      { text: "This struggle is your strength being forged.", author: "Forge" },
+      { text: "You're worth fighting for.", author: "Fight" },
+      { text: "The pull will pass. You will not.", author: "Persistence" },
+      { text: "You're not your worst scroll. You're your next scroll.", author: "Better scroll" },
+      { text: "The real world awaits. Don't hide in pixels.", author: "Real world await" },
+      { text: "You've always been stronger than you think.", author: "Strength think" },
+      { text: "Every moment you choose real is growth.", author: "Growth" },
+      { text: "Don't go back. Go forward.", author: "Forward" },
+      { text: "The AI doesn't know your soul. You do.", author: "Soul" }
     ];
 
     let currentQuote = 0;
+    let motivationalQuote = null;
 
     function nextQuote() {
       currentQuote = (currentQuote + 1) % quotes.length;
       document.getElementById('quote-text').textContent = quotes[currentQuote].text;
-      document.getElementById('quote-author').textContent = quotes[currentQuote].author;
+      document.getElementById('quote-author').textContent = '— ' + quotes[currentQuote].author;
     }
 
     setInterval(nextQuote, 12000);
 
     function showMotivational() {
-      showToast(quotes[Math.floor(Math.random() * quotes.length)].text.replace(/"/g, ''));
-    }
-
-    // === JOURNAL ===
-    function openJournal() {
-      document.getElementById('journal-modal').classList.remove('hidden');
-      document.getElementById('journal-modal').classList.add('flex');
-      document.getElementById('journal-text').focus();
-    }
-
-    function closeJournal() {
-      document.getElementById('journal-modal').classList.add('hidden');
-      document.getElementById('journal-modal').classList.remove('flex');
-      document.getElementById('journal-text').value = '';
-    }
-
-    function saveJournal() {
-      const text = document.getElementById('journal-text').value.trim();
-      if (!text) {
-        showToast('Write something first');
-        return;
-      }
-
-      state.journals.push({
-        time: Date.now(),
-        text: text
-      });
-      
-      addActivity('Journal entry', Date.now(), 'journal');
-      saveToSupabase('journal');
-      saveState();
-      closeJournal();
-      renderActivityList();
-      showToast('Journal saved');
+      const q = quotes[Math.floor(Math.random() * quotes.length)];
+      const msg = q.text + '\n\n— ' + q.author;
+      alert(msg);
     }
 
     // === MILESTONES ===
