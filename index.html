@@ -499,6 +499,33 @@
           console.error('Failed to load state:', e);
         }
       }
+      
+      // Try load from Google Sheets
+      loadFromSheets();
+    }
+
+    function loadFromSheets() {
+      // Load latest from Google Sheets JSON feed
+      const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/1FAIpQLSdeFhslGKV-a2IRAH-o3nwMMbu5byEj82b0Cukin_sssq96sQ/pub?gid=0&output=json';
+      
+      fetch(sheetUrl, { mode: 'no-cors' })
+        .then(r => r.json())
+        .then(data => {
+          if (data && data.length > 1) {
+            const lastRow = data[data.length - 1];
+            const jsonData = lastRow[2]; // Data column
+            if (jsonData && jsonData.includes('startTime')) {
+              try {
+                const sheetState = JSON.parse(jsonData);
+                if (sheetState.startTime && (!state.startTime || sheetState.startTime > state.startTime)) {
+                  state.startTime = sheetState.startTime;
+                  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+                }
+              } catch(e) {}
+            }
+          }
+        })
+        .catch(() => {});
     }
 
     function saveState() {
