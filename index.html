@@ -572,7 +572,8 @@
           state.startTime = data[0].start_time;
           localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
           showToast('Synced from database!');
-          location.reload();
+          updateUI();
+          startCounter();
         }
       })
       .catch(e => console.log('Load error:', e));
