@@ -454,6 +454,11 @@
   </div>
 
   <script>
+    // === GOOGLE FORM SYNC CONFIG ===
+    const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScdeFhslGKV-a2IRAH-o3nwMMbu5byEj82b0Cukin_sssq96sQ/formResponse';
+    const ENTRY_TYPE = 'entry.1907718989';
+    const ENTRY_DATA = 'entry.1984625570';
+
     // === STATE MANAGEMENT ===
     const STORAGE_KEY = 'quitr-data';
     
@@ -495,6 +500,25 @@
 
     function saveState() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      
+      // Sync to Google Form
+      syncToGoogleForm('state_update', {
+        startTime: state.startTime,
+        urges: state.urges.length,
+        naturals: state.naturals.length,
+        journals: state.journals.length,
+        streaks: state.streaks.length
+      });
+    }
+
+    function syncToGoogleForm(type, data) {
+      try {
+        const img = document.createElement('img');
+        img.src = FORM_URL + '?usp=pp_url&' + ENTRY_TYPE + '=' + encodeURIComponent(type) + '&' + ENTRY_DATA + '=' + encodeURIComponent(JSON.stringify(data));
+        img.style.display = 'none';
+        document.body.appendChild(img);
+        setTimeout(() => { document.body.removeChild(img); }, 2000);
+      } catch(e) {}
     }
 
     function setupEventListeners() {
