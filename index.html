@@ -508,31 +508,12 @@
     }
 
     function loadFromSheets() {
-      // Load from Form's JSON feed
-      const jsonUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSdeFhslGKV-a2IRAH-o3nwMMbu5byEj82b0Cukin_sssq96sQ/viewform?usp=drivesdk&output=json';
-      
-      fetch(jsonUrl)
-        .then(r => r.text())
-        .then(text => {
-          try {
-            // Try to extract just the data from response
-            const match = text.match(/"startTime"\s*:\s*\d+/);
-            if (match) {
-              const time = match[0].split(':')[1].trim();
-              state.startTime = parseInt(time);
-              localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-              showToast('Synced from Sheet!');
-              location.reload();
-            } else {
-              showToast('No data found');
-            }
-          } catch(e) {
-            showToast('Sync failed');
-          }
-        })
-        .catch(() => {
-          showToast('Sync error');
-        });
+      // Show current data to copy - manual sync
+      const data = { startTime: state.startTime };
+      showToast('Data: ' + JSON.stringify(data));
+      navigator.clipboard.writeText(JSON.stringify(data)).then(() => {
+        showToast('Data copied! Paste on other device');
+      });
     }
 
     function saveState() {
