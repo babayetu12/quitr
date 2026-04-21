@@ -598,17 +598,18 @@
       addActivity('Journey started', selectedTime, 'start');
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        syncToGoogleForm('streak_start', { time: selectedTime });
       } catch(e) {}
       updateUI();
       startCounter();
       showToast('Journey started!');
       
-      // Force page reload to confirm
+      // Reload after sync
       setTimeout(() => {
         if (state.startTime) {
           location.reload();
         }
-      }, 500);
+      }, 1000);
     }
 
     function getLatestStreakStart() {
