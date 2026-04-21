@@ -454,6 +454,11 @@
   </div>
 
   <script>
+    // === GOOGLE FORM SYNC CONFIG ===
+    const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdeFhslGKV-a2IRAH-o3nwMMbu5byEj82b0Cukin_sssq96sQ/formResponse';
+    const ENTRY_TYPE = 'entry.1907718989';
+    const ENTRY_DATA = 'entry.1984625570';
+
     // === STATE MANAGEMENT ===
     const STORAGE_KEY = 'quitr-data';
     
@@ -470,7 +475,31 @@
 
     let counterInterval = null;
     let streakChart = null;
-    let relapseChart = null;
+    let weeklyChart = null;
+
+    // === SYNC TO GOOGLE FORM ===
+    function syncToGoogleForm(type, data) {
+      const formData = new FormData();
+      formData.append(ENTRY_TYPE, type);
+      formData.append(ENTRY_DATA, JSON.stringify(data));
+      
+      fetch(FORM_URL, {
+        method: 'POST',
+        body: formData,
+        mode: 'no-cors'
+      }).catch(() => {});
+    }
+
+    function syncState() {
+      syncToGoogleForm('full_state', {
+        startTime: state.startTime,
+        streaks: state.streaks,
+        urges: state.urges.length,
+        naturals: state.naturals.length,
+        journals: state.journals.length,
+        syncedAt: Date.now()
+      });
+    }
 
     // === INITIALIZATION ===
     function init() {
@@ -495,6 +524,7 @@
 
     function saveState() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      syncState();
     }
 
     function setupEventListeners() {
