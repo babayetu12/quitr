@@ -504,14 +504,16 @@
     function saveState() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       
-      // Sync to Google Form
-      syncToGoogleForm('state_update', {
-        startTime: state.startTime,
-        urges: state.urges.length,
-        naturals: state.naturals.length,
-        journals: state.journals.length,
-        streaks: state.streaks.length
-      });
+      // Sync to Google Sheets (debounced)
+      clearTimeout(window._syncTimer);
+      window._syncTimer = setTimeout(() => {
+        syncToGoogleForm('update', {
+          startTime: state.startTime,
+          urges: state.urges.length,
+          naturals: state.naturals.length,
+          journals: state.journals.length
+        });
+      }, 500);
     }
 
     function syncToGoogleForm(type, data) {
