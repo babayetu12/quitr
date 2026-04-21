@@ -588,10 +588,15 @@
             for (let i = 0; i < maxNaturals; i++) state.naturals.push({time: Date.now()});
             state.journals = [];
             for (let i = 0; i < maxJournals; i++) state.journals.push({time: Date.now()});
+            state.milestones = [];
+            for (let i = 0; i < maxUrges; i++) state.milestones.push({type: 'Urge resisted', time: Date.now() - i*60000, category: 'urge'});
+            for (let i = 0; i < maxNaturals; i++) state.milestones.push({type: 'Natural release', time: Date.now() - i*60000, category: 'natural'});
+            for (let i = 0; i < maxJournals; i++) state.milestones.push({type: 'Journal entry', time: Date.now() - i*60000, category: 'journal'});
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
             showToast('Synced! Urges:' + maxUrges + ' Naturals:' + maxNaturals);
             updateUI();
             startCounter();
+            renderActivityList();
           }
         } else {
           showToast('No data found');
@@ -747,7 +752,7 @@
       // Streak card
       document.getElementById('hours-sober').textContent = hours;
       document.getElementById('minutes-sober').textContent = minutes;
-      document.getElementById('urges-resisted').textContent = state.currentStreak.urgesResisted;
+      document.getElementById('urges-resisted').textContent = state.urges ? state.urges.length : 0;
 
       // Days streak
       const days = Math.floor(hours / 24);
