@@ -508,34 +508,31 @@
     }
 
     function loadFromSheets() {
-      // Auto-load from Sheets on page load
-      // Use the Sheets CSV publish URL
-      const csvUrl = 'https://docs.google.com/spreadsheets/d/e/1FAIpQLSdeFhslGKV-a2IRAH-o3nwMMbu5byEj82b0Cukin_sssq96sQ/pub?output=csv';
+      // Load from Form's JSON feed
+      const jsonUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSdeFhslGKV-a2IRAH-o3nwMMbu5byEj82b0Cukin_sssq96sQ/viewform?usp=drivesdk&output=json';
       
-      fetch(csvUrl)
+      fetch(jsonUrl)
         .then(r => r.text())
         .then(text => {
-          const lines = text.trim().split('\n');
-          if (lines.length > 1) {
-            const lastLine = lines[lines.length - 1];
-            const cols = lastLine.split(',');
-            if (cols.length >= 3) {
-              const jsonStr = cols[2] || cols[1];
-              if (jsonStr && jsonStr.includes('startTime')) {
-                try {
-                  const data = JSON.parse(jsonStr);
-                  if (data.startTime) {
-                    state.startTime = data.startTime;
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-                    showToast('Synced from Sheet!');
-                    updateUI();
-                  }
-                } catch(e) {}
-              }
+          try {
+            // Try to extract just the data from response
+            const match = text.match(/"startTime"\s*:\s*\d+/);
+            if (match) {
+              const time = match[0].split(':')[1].trim();
+              state.startTime = parseInt(time);
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+              showToast('Synced from Sheet!');
+              location.reload();
+            } else {
+              showToast('No data found');
             }
+          } catch(e) {
+            showToast('Sync failed');
           }
         })
-        .catch(() => {});
+        .catch(() => {
+          showToast('Sync error');
+        });
     }
 
     function saveState() {
