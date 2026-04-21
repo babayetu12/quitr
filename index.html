@@ -505,21 +505,34 @@
     }
 
     function loadFromSheets() {
-      // Show prompt - user pastes latest data to load
-      const latestData = prompt('If you have data from another device, paste it here to sync:');
-      if (latestData) {
-        try {
-          const parsed = JSON.parse(latestData);
-          if (parsed.startTime) {
-            state.startTime = parsed.startTime;
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-            showToast('Data loaded!');
-            location.reload();
+      // Auto-load from Sheets on page load
+      // Use the Sheets CSV publish URL
+      const csvUrl = 'https://docs.google.com/spreadsheets/d/e/1FAIpQLSdeFhslGKV-a2IRAH-o3nwMMbu5byEj82b0Cukin_sssq96sQ/pub?output=csv';
+      
+      fetch(csvUrl)
+        .then(r => r.text())
+        .then(text => {
+          const lines = text.trim().split('\n');
+          if (lines.length > 1) {
+            const lastLine = lines[lines.length - 1];
+            const cols = lastLine.split(',');
+            if (cols.length >= 3) {
+              const jsonStr = cols[2] || cols[1];
+              if (jsonStr && jsonStr.includes('startTime')) {
+                try {
+                  const data = JSON.parse(jsonStr);
+                  if (data.startTime) {
+                    state.startTime = data.startTime;
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+                    showToast('Synced from Sheet!');
+                    updateUI();
+                  }
+                } catch(e) {}
+              }
+            }
           }
-        } catch(e) {
-          showToast('Invalid data');
-        }
-      }
+        })
+        .catch(() => {});
     }
 
     function saveState() {
