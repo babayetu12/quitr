@@ -523,13 +523,12 @@
       }, 500);
     }
 
-    function saveToSupabase() {
-      console.log('Saving to Supabase:', state.startTime);
-      console.log('URL:', SUPABASE_URL + '/rest/v1/tracker');
-      console.log('Key:', SUPABASE_KEY.substring(0, 20) + '...');
+    function saveToSupabase(action) {
+      console.log('Saving to Supabase:', action, state.startTime);
       
       const payload = {
         start_time: state.startTime,
+        action: action,
         urges: state.urges ? state.urges.length : 0,
         naturals: state.naturals ? state.naturals.length : 0,
         journals: state.journals ? state.journals.length : 0
@@ -657,6 +656,7 @@
       state.currentStreak = { start: selectedTime, urgesResisted: 0 };
       
       addActivity('Journey started', selectedTime, 'start');
+      saveToSupabase('journey_start');
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       } catch(e) {}
@@ -825,6 +825,7 @@
       state.naturals.push({ time: Date.now() });
       
       addActivity('Natural release', Date.now(), 'natural');
+      saveToSupabase('natural');
       saveState();
       showToast('Natural release logged - healthy choice!');
       renderActivityList();
@@ -950,6 +951,7 @@
       });
       
       addActivity('Journal entry', Date.now(), 'journal');
+      saveToSupabase('journal');
       saveState();
       closeJournal();
       renderActivityList();
