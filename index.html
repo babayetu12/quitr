@@ -512,10 +512,12 @@
     }
 
     function syncToGoogleForm(type, data) {
+      console.log('SYNC:', type, data);
       try {
-        // Use beacon for more reliable cross-origin
         const payload = ENTRY_TYPE + '=' + encodeURIComponent(type) + '&' + ENTRY_DATA + '=' + encodeURIComponent(JSON.stringify(data));
         const url = FORM_URL + '?usp=pp_url&' + payload;
+        
+        console.log('SYNC URL:', url);
         
         // Try fetch first
         fetch(url, { method: 'GET', mode: 'no-cors' }).catch(() => {});
@@ -526,7 +528,9 @@
         img.style.display = 'none';
         document.body.appendChild(img);
         setTimeout(() => { try{document.body.removeChild(img);}catch(e){} }, 3000);
-      } catch(e) {}
+      } catch(e) {
+        console.log('SYNC ERROR:', e);
+      }
     }
 
     function setupEventListeners() {
