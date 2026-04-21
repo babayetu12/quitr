@@ -399,8 +399,8 @@
             <button onclick="importData()" class="flex-1 glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors">
               Paste Data
             </button>
-            <button onclick="loadFromSheets(); showToast('Loading from Sheet...')" class="flex-1 glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors text-electric-cyan">
-              Load Sheet
+            <button onclick="loadFromSupabase(); showToast('Syncing...')" class="flex-1 glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors text-electric-cyan">
+              Sync
             </button>
           </div>
           <input type="file" id="import-file" class="hidden" accept=".json">
@@ -458,9 +458,8 @@
 
   <script>
     // === GOOGLE FORM SYNC CONFIG ===
-    const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScdeFhslGKV-a2IRAH-o3nwMMbu5byEj82b0Cukin_sssq96sQ/formResponse';
-    const ENTRY_TYPE = 'entry.1907718989';
-    const ENTRY_DATA = 'entry.1984625570';
+    const SUPABASE_URL = 'https://qfuvoctvvbaupvtwihrt.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJlaWQiOiIxYmQ1MTk3ZS1iYmY2LTRiODMtOTVjMC1jYjZkNTRjMmViNDEiLCJzdWIiOiIxMjM0NTY3OC0xMjM0LTEyMzQtMTIzNC0xMjM0NTY3ODlhYmNkIiwiZXhwIjoyNTY4MDAwMDAwfQ.JKGJ7b0nXw2Y9K_qHvT0P6V3WVLQTJcXFTclU9pV0qI';
 
     // === STATE MANAGEMENT ===
     const STORAGE_KEY = 'quitr-data';
@@ -500,11 +499,8 @@
         }
       }
       
-      // If no local data, try load from Sheets
-      if (!state.startTime) {
-        showToast('Loading from Sheet...');
-        loadFromSheets();
-      }
+      // Load from Supabase
+      loadFromSupabase();
     }
 
     function loadFromSheets() {
@@ -519,16 +515,47 @@
     function saveState() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       
-      // Sync to Google Sheets (debounced)
+      // Sync to Supabase (debounced)
       clearTimeout(window._syncTimer);
       window._syncTimer = setTimeout(() => {
-        syncToGoogleForm('streak_start', {
-          startTime: state.startTime,
+        saveToSupabase();
+      }, 500);
+    }
+
+    function saveToSupabase() {
+      fetch(SUPABASE_URL + '/rest/v1/tracker', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY
+        },
+        body: JSON.stringify({
+          start_time: state.startTime,
           urges: state.urges.length,
           naturals: state.naturals.length,
           journals: state.journals.length
-        });
-      }, 500);
+        })
+      }).catch(() => {});
+    }
+
+    function loadFromSupabase() {
+      fetch(SUPABASE_URL + '/rest/v1/tracker?order=created_at.desc&limit=1', {
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY
+        }
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.length > 0 && data[0].start_time) {
+          state.startTime = data[0].start_time;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          showToast('Synced from database!');
+          location.reload();
+        }
+      })
+      .catch(() => {});
     }
 
     function syncToGoogleForm(type, data) {
