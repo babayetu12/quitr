@@ -399,6 +399,9 @@
             <button onclick="importData()" class="flex-1 glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors">
               Import Data
             </button>
+            <button onclick="syncToGoogleForm('test', {test: true}); showToast('Sync test triggered!')" class="flex-1 glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors text-electric-cyan">
+              Test Sync
+            </button>
           </div>
           <input type="file" id="import-file" class="hidden" accept=".json">
         </section>
