@@ -568,10 +568,19 @@
       state.currentStreak = { start: selectedTime, urgesResisted: 0 };
       
       addActivity('Journey started', selectedTime, 'start');
-      saveState();
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch(e) {}
       updateUI();
       startCounter();
       showToast('Journey started!');
+      
+      // Force page reload to confirm
+      setTimeout(() => {
+        if (state.startTime) {
+          location.reload();
+        }
+      }, 500);
     }
 
     function getLatestStreakStart() {
