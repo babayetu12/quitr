@@ -393,11 +393,11 @@
         <!-- Data Management -->
         <section class="mb-6">
           <div class="flex gap-3">
-            <button onclick="exportData()" class="flex-1 glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors">
-              Export Data
+            <button onclick="copyData()" class="flex-1 glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors">
+              Copy Data
             </button>
             <button onclick="importData()" class="flex-1 glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors">
-              Import Data
+              Paste Data
             </button>
             <button onclick="syncToGoogleForm('journal', {syncTest: Date.now()}); showToast('Sync test triggered!')" class="flex-1 glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors text-electric-cyan">
               Test Sync
@@ -505,27 +505,21 @@
     }
 
     function loadFromSheets() {
-      // Load latest from Google Sheets JSON feed
-      const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/1FAIpQLSdeFhslGKV-a2IRAH-o3nwMMbu5byEj82b0Cukin_sssq96sQ/pub?gid=0&output=json';
-      
-      fetch(sheetUrl, { mode: 'no-cors' })
-        .then(r => r.json())
-        .then(data => {
-          if (data && data.length > 1) {
-            const lastRow = data[data.length - 1];
-            const jsonData = lastRow[2]; // Data column
-            if (jsonData && jsonData.includes('startTime')) {
-              try {
-                const sheetState = JSON.parse(jsonData);
-                if (sheetState.startTime && (!state.startTime || sheetState.startTime > state.startTime)) {
-                  state.startTime = sheetState.startTime;
-                  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-                }
-              } catch(e) {}
-            }
+      // Show prompt - user pastes latest data to load
+      const latestData = prompt('If you have data from another device, paste it here to sync:');
+      if (latestData) {
+        try {
+          const parsed = JSON.parse(latestData);
+          if (parsed.startTime) {
+            state.startTime = parsed.startTime;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            showToast('Data loaded!');
+            location.reload();
           }
-        })
-        .catch(() => {});
+        } catch(e) {
+          showToast('Invalid data');
+        }
+      }
     }
 
     function saveState() {
@@ -1250,16 +1244,13 @@
     }
 
     // === EXPORT/IMPORT ===
-    function exportData() {
-      const data = JSON.stringify(state, null, 2);
-      const blob = new Blob([data], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'quitr-data-' + Date.now() + '.json';
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast('Data exported');
+    function copyData() {
+      const data = JSON.stringify({ startTime: state.startTime });
+      navigator.clipboard.writeText(data).then(() => {
+        showToast('Copied! Paste on other device');
+      }).catch(() => {
+        prompt('Copy this data:', data);
+      });
     }
 
     function importData() {
