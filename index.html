@@ -523,12 +523,14 @@
     }
 
     function saveToSupabase() {
+      console.log('Saving to Supabase:', state.startTime);
       fetch(SUPABASE_URL + '/rest/v1/tracker', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'apikey': SUPABASE_KEY,
-          'Authorization': 'Bearer ' + SUPABASE_KEY
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Prefer': 'return=minimal'
         },
         body: JSON.stringify({
           start_time: state.startTime,
@@ -536,10 +538,16 @@
           naturals: state.naturals.length,
           journals: state.journals.length
         })
-      }).catch(() => {});
+      })
+      .then(r => {
+        console.log('Save response:', r.status);
+        if (r.ok) showToast('Saved to database!');
+      })
+      .catch(e => console.log('Save error:', e));
     }
 
     function loadFromSupabase() {
+      console.log('Loading from Supabase');
       fetch(SUPABASE_URL + '/rest/v1/tracker?order=created_at.desc&limit=1', {
         headers: {
           'apikey': SUPABASE_KEY,
@@ -548,6 +556,7 @@
       })
       .then(r => r.json())
       .then(data => {
+        console.log('Load response:', data);
         if (data && data.length > 0 && data[0].start_time) {
           state.startTime = data[0].start_time;
           localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -555,7 +564,7 @@
           location.reload();
         }
       })
-      .catch(() => {});
+      .catch(e => console.log('Load error:', e));
     }
 
     function syncToGoogleForm(type, data) {
