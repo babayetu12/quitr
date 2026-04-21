@@ -598,18 +598,38 @@
       addActivity('Journey started', selectedTime, 'start');
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-        syncToGoogleForm('streak_start', { time: selectedTime });
       } catch(e) {}
+      
+      // Direct sync
+      try {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = FORM_URL + '?usp=pp_url';
+        form.target = 'syncFrame';
+        
+        const typeInput = document.createElement('input');
+        typeInput.name = ENTRY_TYPE;
+        typeInput.value = 'streak_start';
+        
+        const dataInput = document.createElement('input');
+        dataInput.name = ENTRY_DATA;
+        dataInput.value = JSON.stringify({ startTime: selectedTime });
+        
+        form.appendChild(typeInput);
+        form.appendChild(dataInput);
+        document.body.appendChild(form);
+        form.submit();
+      } catch(e) {}
+      
       updateUI();
       startCounter();
       showToast('Journey started!');
       
-      // Reload after sync
       setTimeout(() => {
         if (state.startTime) {
           location.reload();
         }
-      }, 1000);
+      }, 2000);
     }
 
     function getLatestStreakStart() {
