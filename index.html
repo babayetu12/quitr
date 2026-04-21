@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QUITR - Cold Turkey Recovery</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'deep-charcoal': '#0D0D0D',
+            'electric-cyan': '#00F5D4',
+            'warm-amber': '#FF9F1C',
+            'soft-rose': '#F72585',
+            'midnight': '#1A1A2E',
+            'off-white': '#F8F8F2',
+            'carbon': '#161616',
+          },
+          fontFamily: {
+            'syne': ['Syne', 'sans-serif'],
+            'dm': ['DM Sans', 'sans-serif'],
+            'mono': ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background-color: #0D0D0D;
+      background-image: 
+        radial-gradient(ellipse at top, rgba(0, 245, 212, 0.03) 0%, transparent 50%),
+        radial-gradient(ellipse at bottom right, rgba(247, 37, 133, 0.03) 0%, transparent 50%);
+    }
+    .font-syne { font-family: 'Syne', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(0, 245, 212, 0.3), 0 0 40px rgba(0, 245, 212, 0.1); }
+      50% { box-shadow: 0 0 40px rgba(0, 245, 212, 0.5), 0 0 80px rgba(0, 245, 212, 0.2); }
+    }
+    .pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+    
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.02); opacity: 1; }
+    }
+    .breathe { animation: breathe 4s ease-in-out infinite; }
+    
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .slide-in { animation: slideIn 0.5s ease-out forwards; }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .fade-in { animation: fadeIn 0.3s ease-out forwards; }
+    
+    @keyframes ripple {
+      0% { transform: scale(0.8); opacity: 0.5; }
+      100% { transform: scale(2); opacity: 0; }
+    }
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(0, 245, 212, 0.4);
+      animation: ripple 1s ease-out forwards;
+    }
+    
+    .glass {
+      background: rgba(26, 26, 46, 0.6);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-light {
+      background: rgba(26, 26, 46, 0.4);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .stat-card {
+      background: linear-gradient(135deg, rgba(26, 26, 46, 0.8) 0%, rgba(22, 22, 22, 0.9) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    
+    .nav-item {
+      position: relative;
+      transition: all 0.2s ease;
+    }
+    .nav-item.active {
+      color: #00F5D4;
+    }
+    .nav-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 20px;
+      height: 2px;
+      background: #00F5D4;
+      border-radius: 2px;
+    }
+    
+    input[type="datetime-local"] {
+      background: #161616;
+      color: #F8F8F2;
+      border: 1px solid rgba(0, 245, 212, 0.3);
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      font-family: 'DM Sans', sans-serif;
+      transition: border-color 0.2s;
+    }
+    input[type="datetime-local"]:focus {
+      outline: none;
+      border-color: #00F5D4;
+    }
+    input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+    }
+    
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #FF9F1C;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(255, 159, 28, 0.5);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #FF9F1C;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 0 10px rgba(255, 159, 28, 0.5);
+    }
+    
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0D0D0D; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #00F5D4; }
+    
+    .page { display: none; }
+    .page.active { display: block; }
+  </style>
+</head>
+<body class="min-h-screen text-off-white">
+  
+  <!-- Navigation -->
+  <nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-white/5">
+    <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="font-syne text-2xl font-bold text-electric-cyan">QUITR</div>
+      <div class="flex gap-6">
+        <button class="nav-item active text-gray-400 hover:text-white transition-colors font-medium" onclick="showPage('tracker')">Tracker</button>
+        <button class="nav-item text-gray-400 hover:text-white transition-colors font-medium" onclick="showPage('analytics')">Analytics</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="pt-20 pb-24">
+    
+    <!-- TRACKER PAGE -->
+    <div id="page-tracker" class="page active">
+      <div class="max-w-2xl mx-auto px-4">
+        
+        <!-- Hero Counters -->
+        <section class="text-center py-8">
+          <div id="main-counter" class="pulse-glow rounded-2xl bg-midnight border border-electric-cyan/30 p-8 md:p-12 inline-block mb-6">
+            <div id="counter-setup" class="space-y-4">
+              <p class="text-gray-400">When was your last relapse?</p>
+              <p class="text-gray-600 text-sm">Set this to start tracking your sober time</p>
+              <input type="datetime-local" id="relapse-time" class="w-full max-w-xs mx-auto block">
+              <button id="start-btn" class="hover:scale-105 transition-transform bg-gradient-to-r from-electric-cyan to-cyan-400 text-deep-charcoal font-bold text-lg px-8 py-3 rounded-lg shadow-lg shadow-electric-cyan/20">
+                START JOURNEY
+              </button>
+            </div>
+            
+            <div id="counter-active" class="hidden">
+              <div id="main-time" class="font-mono text-5xl md:text-7xl font-bold text-electric-cyan tracking-wider">
+                00:00:00
+              </div>
+              <div class="text-gray-500 mt-2 text-sm uppercase tracking-widest">Time sober</div>
+              <div id="start-info" class="text-gray-600 text-xs mt-3"></div>
+            </div>
+          </div>
+          
+          <div id="counter-actions" class="hidden flex justify-center gap-4 mt-4">
+            <button id="edit-time-btn" class="text-gray-500 hover:text-electric-cyan text-sm transition-colors">
+              Edit start time
+            </button>
+            <span class="text-gray-700">|</span>
+            <button id="log-relapse-btn" class="text-soft-rose hover:text-soft-rose/80 text-sm transition-colors">
+              Log relapse
+            </button>
+            <span class="text-gray-700">|</span>
+            <button id="reset-btn" class="text-gray-500 hover:text-soft-rose text-sm transition-colors">
+              Reset all
+            </button>
+          </div>
+        </section>
+
+        <!-- Current Streak Card -->
+        <section class="mb-6">
+          <div class="glass rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-syne text-lg font-bold text-electric-cyan">Current Streak</h3>
+              <div id="streak-badge" class="px-3 py-1 rounded-full bg-electric-cyan/10 text-electric-cyan text-sm font-mono">
+                0 days
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <div id="hours-sober" class="font-mono text-2xl text-white">0</div>
+                <div class="text-gray-500 text-xs">Hours</div>
+              </div>
+              <div>
+                <div id="minutes-sober" class="font-mono text-2xl text-white">0</div>
+                <div class="text-gray-500 text-xs">Minutes</div>
+              </div>
+              <div>
+                <div id="urges-resisted" class="font-mono text-2xl text-white">0</div>
+                <div class="text-gray-500 text-xs">Urges resisted</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Progress Bar -->
+        <section class="mb-6">
+          <div class="glass rounded-xl p-4">
+            <div class="flex justify-between text-xs text-gray-500 mb-2">
+              <span>Progress to next milestone</span>
+              <span id="progress-percent">0%</span>
+            </div>
+            <div class="h-2 bg-carbon rounded-full overflow-hidden">
+              <div id="progress-bar" class="h-full bg-gradient-to-r from-electric-cyan to-cyan-400 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <div class="flex justify-between mt-2 text-xs text-gray-600">
+              <span>1hr</span>
+              <span>24hr</span>
+              <span>72hr</span>
+              <span>168hr</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Quick Actions Grid -->
+        <section class="mb-6">
+          <h3 class="font-syne text-lg font-bold mb-4 text-warm-amber">Quick Actions</h3>
+          <div class="grid grid-cols-2 gap-3">
+            <button onclick="openUrgeModal()" class="glass-light rounded-xl p-4 text-left hover:border-warm-amber/50 transition-all group">
+              <div class="text-2xl mb-1">🔥</div>
+              <div class="font-bold text-white group-hover:text-warm-amber transition-colors">Rate urge</div>
+              <div class="text-gray-600 text-xs">How strong is it 1-10?</div>
+            </button>
+            <button onclick="showMotivational()" class="glass-light rounded-xl p-4 text-left hover:border-electric-cyan/50 transition-all group">
+              <div class="text-2xl mb-1">💪</div>
+              <div class="font-bold text-white group-hover:text-electric-cyan transition-colors">Need motivation</div>
+              <div class="text-gray-600 text-xs">Get a boost</div>
+            </button>
+            <button onclick="openJournal()" class="glass-light rounded-xl p-4 text-left hover:border-soft-rose/50 transition-all group">
+              <div class="text-2xl mb-1">📝</div>
+              <div class="font-bold text-white group-hover:text-soft-rose transition-colors">Journal</div>
+              <div class="text-gray-600 text-xs">Write your thoughts</div>
+            </button>
+            <button onclick="showMilestones()" class="glass-light rounded-xl p-4 text-left hover:border-purple-500/50 transition-all group">
+              <div class="text-2xl mb-1">🏆</div>
+              <div class="font-bold text-white group-hover:text-purple-400 transition-colors">Milestones</div>
+              <div class="text-gray-600 text-xs">View achievements</div>
+            </button>
+            <button onclick="logNatural()" class="glass-light rounded-xl p-4 text-left hover:border-green-500/50 transition-all group">
+              <div class="text-2xl mb-1">🌱</div>
+              <div class="font-bold text-white group-hover:text-green-400 transition-colors">Natural</div>
+              <div class="text-gray-600 text-xs">Healthy solo (fantasy)</div>
+            </button>
+          </div>
+        </section>
+
+        <!-- Motivational Quote -->
+        <section id="quote-section" class="mb-6">
+          <div class="glass rounded-xl p-5 cursor-pointer hover:border-soft-rose/30 transition-all" onclick="nextQuote()">
+            <p id="quote-text" class="text-off-white italic text-base leading-relaxed">
+              "The moment you realize you deserve better is the moment you become unreachable."
+            </p>
+            <p id="quote-author" class="text-electric-cyan text-sm mt-3">— Your future self</p>
+          </div>
+        </section>
+
+        <!-- Recent Activity -->
+        <section class="mb-6">
+          <h3 class="font-syne text-lg font-bold mb-4 text-gray-400">Recent Activity</h3>
+          <div id="activity-list" class="space-y-2">
+            <div class="text-gray-600 text-sm text-center py-4">No activity yet</div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- ANALYTICS PAGE -->
+    <div id="page-analytics" class="page">
+      <div class="max-w-2xl mx-auto px-4">
+        
+        <!-- Summary Stats -->
+        <section class="mb-6">
+          <h2 class="font-syne text-2xl font-bold mb-4">Your Progress</h2>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="stat-card rounded-xl p-5">
+              <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Current streak</div>
+              <div id="current-streak" class="font-mono text-2xl text-electric-cyan">0d 0h</div>
+            </div>
+            <div class="stat-card rounded-xl p-5">
+              <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Best streak</div>
+              <div id="longest-streak" class="font-mono text-2xl text-warm-amber">0 days</div>
+            </div>
+            <div class="stat-card rounded-xl p-5">
+              <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Total clean days</div>
+              <div id="total-days" class="font-mono text-2xl text-purple-400">0</div>
+            </div>
+            <div class="stat-card rounded-xl p-5">
+              <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Urges beaten</div>
+              <div id="total-urges" class="font-mono text-2xl text-green-400">0</div>
+            </div>
+            <div class="stat-card rounded-xl p-5">
+              <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Journal entries</div>
+              <div id="total-journals" class="font-mono text-2xl text-cyan-400">0</div>
+            </div>
+            <div class="stat-card rounded-xl p-5">
+              <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Natural releases</div>
+              <div id="total-naturals" class="font-mono text-2xl text-green-400">0</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Weekly Chart -->
+        <section class="mb-6">
+          <div class="glass rounded-xl p-5">
+            <h3 class="font-syne text-lg font-bold mb-4">This Week</h3>
+            <canvas id="weeklyChart" height="180"></canvas>
+          </div>
+        </section>
+
+        <!-- Streak History -->
+        <section class="mb-6">
+          <div class="glass rounded-xl p-5">
+            <h3 class="font-syne text-lg font-bold mb-4">Your Streaks</h3>
+            <div id="streak-history" class="space-y-2 max-h-48 overflow-y-auto">
+              <div class="text-gray-600 text-sm text-center py-4">No streaks yet. Start your journey!</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Milestones -->
+        <section class="mb-6">
+          <div class="glass rounded-xl p-5">
+            <h3 class="font-syne text-lg font-bold mb-4">Achievements</h3>
+            <div id="achievements" class="space-y-3">
+              <div class="text-gray-500 text-sm">Start tracking to unlock achievements</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Encouragement -->
+        <section class="mb-6">
+          <div class="glass rounded-xl p-5">
+            <h3 class="font-syne text-lg font-bold mb-4">Keep Going</h3>
+            <p id="encouragement" class="text-gray-400 text-sm">Every moment you choose yourself is a victory.</p>
+          </div>
+        </section>
+
+        <!-- Data Management -->
+        <section class="mb-6">
+          <div class="flex gap-3">
+            <button onclick="exportData()" class="flex-1 glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors">
+              Export Data
+            </button>
+            <button onclick="importData()" class="flex-1 glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors">
+              Import Data
+            </button>
+          </div>
+          <input type="file" id="import-file" class="hidden" accept=".json">
+        </section>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Modal for Journal -->
+  <div id="journal-modal" class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center p-4">
+    <div class="glass rounded-2xl p-6 w-full max-w-lg">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-syne text-xl font-bold">Journal Entry</h3>
+        <button onclick="closeJournal()" class="text-gray-500 hover:text-white text-2xl">&times;</button>
+      </div>
+      <textarea id="journal-text" class="w-full h-40 bg-carbon border border-white/10 rounded-lg p-4 text-white resize-none focus:border-electric-cyan focus:outline-none" placeholder="How are you feeling? What triggered the urge? What helped?"></textarea>
+      <div class="flex justify-end gap-3 mt-4">
+        <button onclick="closeJournal()" class="text-gray-500 hover:text-white">Cancel</button>
+        <button onclick="saveJournal()" class="bg-electric-cyan text-deep-charcoal font-bold px-6 py-2 rounded-lg">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Urge Rating -->
+  <div id="urge-modal" class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center p-4">
+    <div class="glass rounded-2xl p-6 w-full max-w-lg">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-syne text-xl font-bold">Rate Your Urge</h3>
+        <button onclick="closeUrgeModal()" class="text-gray-500 hover:text-white text-2xl">&times;</button>
+      </div>
+      <p class="text-gray-400 text-sm mb-6">How strong is the urge right now?</p>
+      <div class="mb-6">
+        <input type="range" id="urge-slider" min="1" max="10" value="5" class="w-full h-2 bg-carbon rounded-lg appearance-none cursor-pointer" oninput="updateUrgeDisplay()">
+        <div class="flex justify-between text-xs text-gray-600 mt-2">
+          <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+        </div>
+      </div>
+      <div class="text-center mb-6">
+        <div id="urge-value" class="font-mono text-4xl text-warm-amber font-bold">5</div>
+        <div id="urge-label" class="text-gray-500 text-sm mt-1">Moderate</div>
+      </div>
+      <div class="flex justify-end gap-3 mt-4">
+        <button onclick="closeUrgeModal()" class="text-gray-500 hover:text-white">Cancel</button>
+        <button onclick="saveUrge()" class="bg-warm-amber text-deep-charcoal font-bold px-6 py-2 rounded-lg">Log</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 glass rounded-lg px-6 py-3 transform transition-all duration-300 translate-y-20 opacity-0 pointer-events-none z-50">
+    <span id="toast-text"></span>
+  </div>
+
+  <script>
+    // === STATE MANAGEMENT ===
+    const STORAGE_KEY = 'quitr-data';
+    
+    let state = {
+      startTime: null,
+      streaks: [],
+      currentStreak: { start: null, urgesResisted: 0 },
+      relapses: [],
+      urges: [],
+      naturals: [],
+      journals: [],
+      milestones: []
+    };
+
+    let counterInterval = null;
+    let streakChart = null;
+    let relapseChart = null;
+
+    // === INITIALIZATION ===
+    function init() {
+      loadState();
+      setupEventListeners();
+      updateUI();
+      if (state.startTime) startCounter();
+      renderActivityList();
+      renderAnalytics();
+    }
+
+    function loadState() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          state = JSON.parse(saved);
+        } catch (e) {
+          console.error('Failed to load state:', e);
+        }
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function setupEventListeners() {
+      document.getElementById('start-btn').addEventListener('click', startJourney);
+      document.getElementById('edit-time-btn').addEventListener('click', editTime);
+      document.getElementById('log-relapse-btn').addEventListener('click', logRelapse);
+      document.getElementById('reset-btn').addEventListener('click', resetAll);
+      document.getElementById('import-file').addEventListener('change', handleImport);
+    }
+
+    // === NAVIGATION ===
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      
+      document.getElementById('page-' + pageId).classList.add('active');
+      event.target.classList.add('active');
+      
+      if (pageId === 'analytics') {
+        renderAnalytics();
+      }
+    }
+
+    // === TRACKER FUNCTIONS ===
+    function formatDateForInput(date) {
+      const d = new Date(date);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+
+    function formatDateDisplay(timestamp) {
+      return new Date(timestamp).toLocaleString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric',
+        hour: 'numeric', minute: '2-digit'
+      });
+    }
+
+    function startJourney() {
+      const inputVal = document.getElementById('relapse-time').value;
+      if (!inputVal) {
+        showToast('Please select a time');
+        return;
+      }
+
+      const selectedTime = new Date(inputVal).getTime();
+      const now = Date.now();
+      
+      if (selectedTime > now) {
+        showToast('Time cannot be in the future');
+        return;
+      }
+
+      // Close previous streak if exists
+      if (state.startTime) {
+        const duration = state.startTime - getLatestStreakStart();
+        if (duration > 0) {
+          state.streaks.push({
+            start: getLatestStreakStart(),
+            end: state.startTime,
+            duration: duration,
+            urgesResisted: state.currentStreak.urgesResisted
+          });
+        }
+      }
+
+      state.startTime = selectedTime;
+      state.currentStreak = { start: selectedTime, urgesResisted: 0 };
+      
+      addActivity('Journey started', selectedTime, 'start');
+      saveState();
+      updateUI();
+      startCounter();
+      showToast('Journey started!');
+    }
+
+    function getLatestStreakStart() {
+      if (state.streaks.length === 0) return state.startTime;
+      return state.streaks[state.streaks.length - 1].end || state.startTime;
+    }
+
+    function startCounter() {
+      if (counterInterval) clearInterval(counterInterval);
+      updateCounter();
+      counterInterval = setInterval(updateCounter, 1000);
+    }
+
+    function updateCounter() {
+      if (!state.startTime) return;
+
+      const elapsed = Date.now() - state.startTime;
+      if (elapsed < 0) return;
+
+      const hours = Math.floor(elapsed / (1000 * 60 * 60));
+      const minutes = Math.floor((elapsed % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((elapsed % (1000 * 60)) / 1000);
+
+      const h = String(hours).padStart(2, '0');
+      const m = String(minutes).padStart(2, '0');
+      const s = String(seconds).padStart(2, '0');
+
+      document.getElementById('main-time').textContent = `${h}:${m}:${s}`;
+
+      // Streak card
+      document.getElementById('hours-sober').textContent = hours;
+      document.getElementById('minutes-sober').textContent = minutes;
+      document.getElementById('urges-resisted').textContent = state.currentStreak.urgesResisted;
+
+      // Days streak
+      const days = Math.floor(hours / 24);
+      document.getElementById('streak-badge').textContent = `${days} day${days !== 1 ? 's' : ''}`;
+
+      // Progress bar
+      const hoursToNext = getNextMilestone(hours);
+      const progress = hoursToNext ? Math.min(((hours % hoursToNext) / hoursToNext) * 100, 100) : 100;
+      document.getElementById('progress-bar').style.width = progress + '%';
+      document.getElementById('progress-percent').textContent = Math.round(progress) + '%';
+    }
+
+    function getNextMilestone(currentHours) {
+      const milestones = [1, 24, 72, 168, 336, 720];
+      for (const m of milestones) {
+        if (currentHours < m) return m;
+      }
+      return null;
+    }
+
+    function updateUI() {
+      if (state.startTime) {
+        document.getElementById('counter-setup').classList.add('hidden');
+        document.getElementById('counter-active').classList.remove('hidden');
+        document.getElementById('counter-actions').classList.remove('hidden');
+        document.getElementById('start-info').textContent = 'Started: ' + formatDateDisplay(state.startTime);
+        document.getElementById('relapse-time').value = formatDateForInput(state.startTime);
+      } else {
+        document.getElementById('counter-setup').classList.remove('hidden');
+        document.getElementById('counter-active').classList.add('hidden');
+        document.getElementById('counter-actions').classList.add('hidden');
+        document.getElementById('relapse-time').value = formatDateForInput(Date.now());
+      }
+    }
+
+    function editTime() {
+      if (counterInterval) clearInterval(counterInterval);
+      document.getElementById('counter-setup').classList.remove('hidden');
+      document.getElementById('counter-active').classList.add('hidden');
+      document.getElementById('counter-actions').classList.add('hidden');
+    }
+
+    function logRelapse() {
+      if (!state.startTime) return;
+      
+      const duration = Date.now() - state.startTime;
+      state.relapses.push({
+        time: Date.now(),
+        streakDuration: duration
+      });
+      
+      // Close current streak
+      state.streaks.push({
+        start: state.currentStreak.start,
+        end: Date.now(),
+        duration: duration,
+        urgesResisted: state.currentStreak.urgesResisted
+      });
+
+      addActivity('Relapsed', Date.now(), 'relapse');
+      
+      // Reset
+      state.startTime = null;
+      state.currentStreak = { start: null, urgesResisted: 0 };
+      
+      saveState();
+      updateUI();
+      renderActivityList();
+      showToast('Relapse logged. Try again.');
+    }
+
+    function resetAll() {
+      if (!confirm('Reset ALL data? This cannot be undone.')) return;
+      
+      state = {
+        startTime: null,
+        streaks: [],
+        currentStreak: { start: null, urgesResisted: 0 },
+        relapses: [],
+        urges: [],
+        naturals: [],
+        journals: [],
+        milestones: []
+      };
+      
+      localStorage.removeItem(STORAGE_KEY);
+      if (counterInterval) clearInterval(counterInterval);
+      updateUI();
+      renderActivityList();
+      showToast('All data reset');
+    }
+
+    function logNatural() {
+      if (!state.startTime) {
+        showToast('Start a journey first');
+        return;
+      }
+      
+      state.naturals.push({ time: Date.now() });
+      
+      addActivity('Natural release', Date.now(), 'natural');
+      saveState();
+      showToast('Natural release logged - healthy choice!');
+      renderActivityList();
+    }
+
+    // === URGE MODAL ===
+    function openUrgeModal() {
+      if (!state.startTime) {
+        showToast('Start a journey first');
+        return;
+      }
+      document.getElementById('urge-modal').classList.remove('hidden');
+      document.getElementById('urge-modal').classList.add('flex');
+      updateUrgeDisplay();
+    }
+
+    function closeUrgeModal() {
+      document.getElementById('urge-modal').classList.add('hidden');
+      document.getElementById('urge-modal').classList.remove('flex');
+    }
+
+    function updateUrgeDisplay() {
+      const val = parseInt(document.getElementById('urge-slider').value);
+      document.getElementById('urge-value').textContent = val;
+      
+      const labels = ['', 'Very mild', 'Mild', 'Slight', 'Low', 'Moderate', 'Strong', 'High', 'Very high', 'Extreme', 'Overwhelming'];
+      document.getElementById('urge-label').textContent = labels[val];
+    }
+
+    function saveUrge() {
+      const level = parseInt(document.getElementById('urge-slider').value);
+      
+      state.urges.push({ time: Date.now(), level: level });
+      
+      if (level >= 9) {
+        // Acted on it - counts as relapse
+        state.relapses.push({
+          time: Date.now(),
+          streakDuration: Date.now() - state.startTime,
+          triggerLevel: level
+        });
+        
+        // Close current streak
+        state.streaks.push({
+          start: state.currentStreak.start,
+          end: Date.now(),
+          duration: Date.now() - state.currentStreak.start,
+          urgesResisted: state.currentStreak.urgesResisted
+        });
+
+        addActivity(`Relapsed (urge ${level})`, Date.now(), 'relapse');
+        
+        // Reset
+        state.startTime = null;
+        state.currentStreak = { start: null, urgesResisted: 0 };
+        
+        saveState();
+        updateUI();
+        showToast('Urge logged. Relapsed logged. Try again.');
+      } else {
+        // Just logged the urge, didn't act
+        state.currentStreak.urgesResisted++;
+        addActivity(`Urge level ${level}`, Date.now(), 'urge');
+        saveState();
+        showToast(`Urge level ${level} logged - you stayed strong!`);
+      }
+      
+      renderActivityList();
+      closeUrgeModal();
+    }
+
+    // === QUOTES ===
+    const quotes = [
+      { text: '"The moment you realize you deserve better is the moment you become unreachable."', author: '— Your future self' },
+      { text: '"Every scroll, every message, every late night — ends today. Not someday. Today."', author: '— Cold truth' },
+      { text: '"You\'re not addicted to AI. You\'re addicted to the void it fills. Fill it with something real."', author: '— The hard truth' },
+      { text: '"72 hours from now, the physical grip loosens. One hundred sixty-eight after that, it never had you at all."', author: '— Science' },
+      { text: '"Cold turkey is cold. But so is the shame. Pick your cold."', author: '— QUITR' },
+      { text: '"They want your engagement. Not your evolution. Your evolution is your defiance."', author: '— Choose you' },
+      { text: '"The urge will pass. Every single time. Let it pass without you."', author: '— Ride the wave' },
+      { text: '"You came here to escape. You stay here to return. Welcome back to yourself."', author: '— The beginning' },
+      { text: '"Your only failure is giving up. Every moment you stay is a victory."', author: '— Keep going' },
+      { text: '"The best time to start was yesterday. The second best is now."', author: '— Begin' }
+    ];
+
+    let currentQuote = 0;
+
+    function nextQuote() {
+      currentQuote = (currentQuote + 1) % quotes.length;
+      document.getElementById('quote-text').textContent = quotes[currentQuote].text;
+      document.getElementById('quote-author').textContent = quotes[currentQuote].author;
+    }
+
+    setInterval(nextQuote, 12000);
+
+    function showMotivational() {
+      showToast(quotes[Math.floor(Math.random() * quotes.length)].text.replace(/"/g, ''));
+    }
+
+    // === JOURNAL ===
+    function openJournal() {
+      document.getElementById('journal-modal').classList.remove('hidden');
+      document.getElementById('journal-modal').classList.add('flex');
+      document.getElementById('journal-text').focus();
+    }
+
+    function closeJournal() {
+      document.getElementById('journal-modal').classList.add('hidden');
+      document.getElementById('journal-modal').classList.remove('flex');
+      document.getElementById('journal-text').value = '';
+    }
+
+    function saveJournal() {
+      const text = document.getElementById('journal-text').value.trim();
+      if (!text) {
+        showToast('Write something first');
+        return;
+      }
+
+      state.journals.push({
+        time: Date.now(),
+        text: text
+      });
+      
+      addActivity('Journal entry', Date.now(), 'journal');
+      saveState();
+      closeJournal();
+      renderActivityList();
+      showToast('Journal saved');
+    }
+
+    // === MILESTONES ===
+    function showMilestones() {
+      const milestones = [
+        { hours: 1, title: '1 Hour', desc: 'You made it through the first hour!' },
+        { hours: 24, title: '24 Hours', desc: 'A full day. Sleep well tonight.' },
+        { hours: 72, title: '72 Hours', desc: 'The hardest part is over.' },
+        { hours: 168, title: '1 Week', desc: 'You\'re stronger than you were.' },
+        { hours: 336, title: '2 Weeks', desc: 'Two weeks of freedom.' },
+        { hours: 720, title: '1 Month', desc: 'A month of new life.' }
+      ];
+
+      const elapsed = state.startTime ? (Date.now() - state.startTime) / (1000 * 60 * 60) : 0;
+      let next = milestones.find(m => m.hours > elapsed);
+      
+      if (next) {
+        const remaining = next.hours - elapsed;
+        showToast(`${next.title} in ${remaining.toFixed(1)} hours`);
+      } else {
+        showToast('Keep going! You\'re amazing.');
+      }
+    }
+
+    // === ACTIVITY LIST ===
+    function addActivity(type, time, category) {
+      const activity = { type, time, category };
+      state.milestones.unshift(activity);
+      if (state.milestones.length > 20) state.milestones.pop();
+    }
+
+    function renderActivityList() {
+      const container = document.getElementById('activity-list');
+      if (!state.milestones || state.milestones.length === 0) {
+        container.innerHTML = '<div class="text-gray-600 text-sm text-center py-4">No activity yet</div>';
+        return;
+      }
+
+      container.innerHTML = state.milestones.slice(0, 10).map(a => {
+        const icon = a.category === 'start' ? '🏁' : a.category === 'relapse' ? '❌' : a.category === 'urge' ? '🚫' : a.category === 'natural' ? '🌱' : a.category === 'journal' ? '📝' : '⭐';
+        return `
+          <div class="flex items-center gap-3 text-sm py-2 border-b border-white/5">
+            <span class="text-lg">${icon}</span>
+            <span class="text-white flex-1">${a.type}</span>
+            <span class="text-gray-600 text-xs">${formatDateDisplay(a.time)}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // === ANALYTICS ===
+    function renderAnalytics() {
+      renderSummaryStats();
+      renderWeeklyChart();
+      renderStreakHistory();
+      renderAchievements();
+    }
+
+    function renderSummaryStats() {
+      // Current streak
+      let currentMs = 0;
+      if (state.startTime) {
+        currentMs = Date.now() - state.startTime;
+      }
+      const currentHours = Math.floor(currentMs / (1000 * 60 * 60));
+      const currentDays = Math.floor(currentHours / 24);
+      const currentMins = Math.floor((currentMs % (1000 * 60 * 60)) / (1000 * 60));
+      document.getElementById('current-streak').textContent = `${currentDays}d ${currentHours % 24}h`;
+
+      // Best streak
+      let best = 0;
+      state.streaks.forEach(s => {
+        const days = (s.duration || 0) / (1000 * 60 * 60 * 24);
+        if (days > best) best = days;
+      });
+      if (state.startTime) {
+        const currentDays = (Date.now() - state.startTime) / (1000 * 60 * 60 * 24);
+        if (currentDays > best) best = currentDays;
+      }
+      document.getElementById('longest-streak').textContent = `${Math.floor(best)} days`;
+
+      // Total clean days
+      let totalMs = 0;
+      state.streaks.forEach(s => { totalMs += s.duration || 0; });
+      if (state.startTime) { totalMs += Date.now() - state.startTime; }
+      const totalDays = Math.floor(totalMs / (1000 * 60 * 60 * 24));
+      document.getElementById('total-days').textContent = totalDays;
+
+      // Total urges beaten
+      let totalUrges = state.urges.length;
+      state.streaks.forEach(s => { totalUrges += s.urgesResisted || 0; });
+      document.getElementById('total-urges').textContent = totalUrges;
+
+      // Journals
+      document.getElementById('total-journals').textContent = state.journals.length;
+
+      // Naturals
+      document.getElementById('total-naturals').textContent = state.naturals.length;
+    }
+
+    let weeklyChart = null;
+
+    function renderWeeklyChart() {
+      const ctx = document.getElementById('weeklyChart');
+      if (!ctx) return;
+      
+      const canvas = ctx.getContext('2d');
+      if (weeklyChart) weeklyChart.destroy();
+
+      const days = [];
+      const hoursData = [];
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        date.setHours(0, 0, 0, 0);
+        const nextDate = new Date(date);
+        nextDate.setDate(nextDate.getDate() + 1);
+
+        let soberHours = 0;
+        state.streaks.forEach(s => {
+          if (s.start && s.end && s.start < nextDate.getTime() && s.end > date.getTime()) {
+            soberHours += (Math.min(s.end, nextDate.getTime()) - Math.max(s.start, date.getTime())) / (1000 * 60 * 60);
+          }
+        });
+        if (state.startTime && state.startTime < nextDate.getTime()) {
+          const end = state.startTime > date.getTime() ? state.startTime : Date.now();
+          if (end > date.getTime()) {
+            soberHours += (end - Math.max(state.startTime, date.getTime())) / (1000 * 60 * 60);
+          }
+        }
+
+        days.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+        hoursData.push(Math.min(soberHours, 24));
+      }
+
+      weeklyChart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: days,
+          datasets: [{
+            label: 'Hours clean',
+            data: hoursData,
+            backgroundColor: hoursData.map(h => h >= 20 ? 'rgba(0, 245, 212, 0.8)' : h >= 12 ? 'rgba(0, 245, 212, 0.5)' : 'rgba(0, 245, 212, 0.3)'),
+            borderColor: '#00F5D4',
+            borderWidth: 1,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, max: 24, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#6B7280' } },
+            x: { grid: { display: false }, ticks: { color: '#6B7280' } }
+          }
+        }
+      });
+    }
+
+    function renderStreakChart() {
+      return; // No longer used
+      const ctx = document.getElementById('streakChart').getContext('2d');
+      
+      if (streakChart) streakChart.destroy();
+
+      // Prepare data - last 14 days
+      const days = [];
+      const data = [];
+      for (let i = 13; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        date.setHours(0, 0, 0, 0);
+        const nextDate = new Date(date);
+        nextDate.setDate(nextDate.getDate() + 1);
+
+        let soberHours = 0;
+        
+        // Calculate sober hours for this day
+        state.streaks.forEach(s => {
+          if (s.start && s.end) {
+            if (s.start < nextDate.getTime() && s.end > date.getTime()) {
+              const start = Math.max(s.start, date.getTime());
+              const end = Math.min(s.end, nextDate.getTime());
+              soberHours += (end - start) / (1000 * 60 * 60);
+            }
+          }
+        });
+        
+        if (state.startTime && state.startTime < nextDate.getTime()) {
+          const start = Math.max(state.startTime, date.getTime());
+          const end = Math.min(Date.now(), nextDate.getTime());
+          soberHours += (end - start) / (1000 * 60 * 60);
+        }
+
+        days.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+        data.push(Math.min(soberHours, 24));
+      }
+
+      streakChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: days,
+          datasets: [{
+            label: 'Hours Sober',
+            data: data,
+            backgroundColor: 'rgba(0, 245, 212, 0.6)',
+            borderColor: '#00F5D4',
+            borderWidth: 1,
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 24,
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#6B7280' }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { color: '#6B7280' }
+            }
+          }
+        }
+      });
+    }
+
+    function renderStreakHistory() {
+      const container = document.getElementById('streak-history');
+      
+      const allStreaks = [...state.streaks];
+      if (state.startTime && state.currentStreak.start) {
+        allStreaks.push({
+          start: state.currentStreak.start,
+          end: Date.now(),
+          duration: Date.now() - state.currentStreak.start,
+          urgesResisted: state.currentStreak.urgesResisted,
+          active: true
+        });
+      }
+
+      if (allStreaks.length === 0) {
+        container.innerHTML = '<div class="text-gray-600 text-sm text-center py-4">Start your first streak today!</div>';
+        return;
+      }
+
+      container.innerHTML = allStreaks.slice(0, 10).reverse().map((s) => {
+        const days = (s.duration || 0) / (1000 * 60 * 60 * 24);
+        const hours = Math.floor(days * 24);
+        
+        return `
+          <div class="flex items-center justify-between py-2 border-b border-white/5">
+            <span class="text-sm">${formatDateDisplay(s.start)}</span>
+            <span class="font-mono text-sm text-electric-cyan">${Math.floor(days)}d ${hours % 24}h</span>
+          </div>
+        `;
+      }).reverse().join('');
+    }
+
+    function renderAchievements() {
+      const container = document.getElementById('achievements');
+      const achievements = [];
+
+      // Calculate total clean time
+      let totalMs = 0;
+      state.streaks.forEach(s => { totalMs += s.duration || 0; });
+      if (state.startTime) { totalMs += Date.now() - state.startTime; }
+      const totalHours = totalMs / (1000 * 60 * 60);
+      const totalDays = Math.floor(totalHours / 24);
+
+      // Check milestones
+      if (totalHours >= 1) achievements.push({ icon: '🌱', title: 'Hour 1', desc: 'First hour in the books' });
+      if (totalHours >= 24) achievements.push({ icon: '☀️', title: '24 Hours', desc: 'A full day clean' });
+      if (totalHours >= 72) achievements.push({ icon: '🌙', title: '72 Hours', desc: 'Three days strong' });
+      if (totalHours >= 168) achievements.push({ icon: '🏆', title: '1 Week', desc: 'A whole week!' });
+      if (totalHours >= 336) achievements.push({ icon: '⭐', title: '2 Weeks', desc: 'Two weeks!' });
+      if (totalHours >= 720) achievements.push({ icon: '👑', title: '1 Month', desc: 'A month of freedom!' });
+
+      // Urges beaten
+      let urges = state.urges.length;
+      state.streaks.forEach(s => { urges += s.urgesResisted || 0; });
+      if (urges >= 1) achievements.push({ icon: '💪', title: 'First Win', desc: `Beaten ${urges} urge${urges > 1 ? 's' : ''}` });
+      if (urges >= 10) achievements.push({ icon: '🔥', title: 'Tough', desc: '10 urges beaten' });
+      if (urges >= 50) achievements.push({ icon: '🦁', title: 'Warrior', desc: '50 urges beaten' });
+
+      // Journals
+      if (state.journals.length >= 1) achievements.push({ icon: '📝', title: 'Writer', desc: 'First journal entry' });
+      if (state.journals.length >= 10) achievements.push({ icon: '📖', title: 'Reflective', desc: '10 journal entries' });
+
+      // Naturals
+      if (state.naturals.length >= 1) achievements.push({ icon: '🌿', title: 'Balanced', desc: 'Healthy release logged' });
+
+      // Streaks
+      if (state.streaks.length >= 1) achievements.push({ icon: '📈', title: 'Started', desc: 'First streak begun' });
+      if (state.streaks.length >= 5) achievements.push({ icon: '🎯', title: 'Dedicated', desc: '5 attempts' });
+
+      if (achievements.length === 0) {
+        container.innerHTML = '<div class="text-gray-500 text-sm">Start your journey to unlock achievements!</div>';
+      } else {
+        container.innerHTML = achievements.map(a => `
+          <div class="flex items-center gap-3 py-2 border-b border-white/5">
+            <span class="text-xl">${a.icon}</span>
+            <div>
+              <div class="text-white font-medium">${a.title}</div>
+              <div class="text-gray-600 text-xs">${a.desc}</div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Encouragement
+      const encouragements = [
+        'Every moment you choose yourself is a victory.',
+        'You are stronger than you know.',
+        'The old you is fading. The new you is rising.',
+        'One day at a time. You got this.',
+        'Your future self will thank you.',
+        'This struggle is making you fierce.',
+        'Real connection waits on the other side of this.',
+        'You deserve genuine intimacy, not pixels.',
+      ];
+      document.getElementById('encouragement').textContent = encouragements[Math.floor(Math.random() * encouragements.length)];
+    }
+
+    // === EXPORT/IMPORT ===
+    function exportData() {
+      const data = JSON.stringify(state, null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'quitr-data-' + Date.now() + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Data exported');
+    }
+
+    function importData() {
+      document.getElementById('import-file').click();
+    }
+
+    function handleImport(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const imported = JSON.parse(event.target.result);
+          state = { ...state, ...imported };
+          saveState();
+          updateUI();
+          renderActivityList();
+          showToast('Data imported');
+        } catch (err) {
+          showToast('Invalid file');
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    }
+
+    // === TOAST ===
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-text').textContent = message;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 3000);
+    }
+
+    // Start
+    init();
+  </script>
+</body>
+</html>
