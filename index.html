@@ -454,13 +454,6 @@
   </div>
 
   <script>
-    // === GOOGLE FORM SYNC CONFIG (disabled for debug) ===
-    // const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdeFhslGKV-a2IRAH-o3nwMMbu5byEj82b0Cukin_sssq96sQ/formResponse';
-    // const ENTRY_TYPE = 'entry.1907718989';
-    // const ENTRY_DATA = 'entry.1984625570';
-
-    const SYNC_ENABLED = false;
-
     // === STATE MANAGEMENT ===
     const STORAGE_KEY = 'quitr-data';
     
@@ -477,55 +470,7 @@
 
     let counterInterval = null;
     let streakChart = null;
-    let weeklyChart = null;
-
-    // === SYNC TO GOOGLE FORM ===
-    function syncToGoogleForm(type, data) {
-      if (!SYNC_ENABLED) return;
-      try {
-        const iframe = document.createElement('iframe');
-        iframe.name = 'hiddenFrame';
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
-        
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = FORM_URL + '?usp=pp_url';
-        form.target = 'hiddenFrame';
-        
-        const typeInput = document.createElement('input');
-        typeInput.name = ENTRY_TYPE;
-        typeInput.value = type;
-        
-        const dataInput = document.createElement('input');
-        dataInput.name = ENTRY_DATA;
-        dataInput.value = JSON.stringify(data);
-        
-        form.appendChild(typeInput);
-        form.appendChild(dataInput);
-        document.body.appendChild(form);
-        
-        form.submit();
-        
-        setTimeout(() => {
-          document.body.removeChild(form);
-          document.body.removeChild(iframe);
-        }, 100);
-      } catch(e) {
-        // Silent fail - don't break the app
-      }
-    }
-
-    function syncState() {
-      syncToGoogleForm('full_state', {
-        startTime: state.startTime,
-        streaks: state.streaks,
-        urges: state.urges.length,
-        naturals: state.naturals.length,
-        journals: state.journals.length,
-        syncedAt: Date.now()
-      });
-    }
+    let relapseChart = null;
 
     // === INITIALIZATION ===
     function init() {
@@ -550,7 +495,6 @@
 
     function saveState() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      syncState();
     }
 
     function setupEventListeners() {
