@@ -526,12 +526,16 @@
     function saveToSupabase(action) {
       console.log('Saving to Supabase:', action, state.startTime);
       
+      const urges = state.urges ? state.urges.length : 0;
+      const naturals = state.naturals ? state.naturals.length : 0;
+      const journals = state.journals ? state.journals.length : 0;
+      
       const payload = {
-        start_time: state.startTime,
-        action: action,
-        urges: state.urges ? state.urges.length : 0,
-        naturals: state.naturals ? state.naturals.length : 0,
-        journals: state.journals ? state.journals.length : 0
+        start_time: state.startTime || Date.now(),
+        action: action || 'update',
+        urges: urges,
+        naturals: naturals,
+        journals: journals
       };
       console.log('Payload:', payload);
       
@@ -575,14 +579,12 @@
           }
           if (latest.start_time) {
             state.startTime = latest.start_time;
-            state.urges = state.urges || [];
-            state.urges.length = latest.urges || 0;
-            state.naturals = state.naturals || [];
-            state.naturals.length = latest.naturals || 0;
-            state.journals = state.journals || [];
-            state.journals.length = latest.journals || 0;
+            // Create arrays of correct length
+            state.urges = Array(latest.urges || 0).fill({});
+            state.naturals = Array(latest.naturals || 0).fill({});
+            state.journals = Array(latest.journals || 0).fill({});
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-            showToast('Synced!');
+            showToast(`Synced! Urges: ${latest.urges || 0}, Naturals: ${latest.naturals || 0}`);
             updateUI();
             startCounter();
           }
