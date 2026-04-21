@@ -454,10 +454,12 @@
   </div>
 
   <script>
-    // === GOOGLE FORM SYNC CONFIG ===
-    const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdeFhslGKV-a2IRAH-o3nwMMbu5byEj82b0Cukin_sssq96sQ/formResponse';
-    const ENTRY_TYPE = 'entry.1907718989';
-    const ENTRY_DATA = 'entry.1984625570';
+    // === GOOGLE FORM SYNC CONFIG (disabled for debug) ===
+    // const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdeFhslGKV-a2IRAH-o3nwMMbu5byEj82b0Cukin_sssq96sQ/formResponse';
+    // const ENTRY_TYPE = 'entry.1907718989';
+    // const ENTRY_DATA = 'entry.1984625570';
+
+    const SYNC_ENABLED = false;
 
     // === STATE MANAGEMENT ===
     const STORAGE_KEY = 'quitr-data';
@@ -479,6 +481,7 @@
 
     // === SYNC TO GOOGLE FORM ===
     function syncToGoogleForm(type, data) {
+      if (!SYNC_ENABLED) return;
       try {
         const iframe = document.createElement('iframe');
         iframe.name = 'hiddenFrame';
