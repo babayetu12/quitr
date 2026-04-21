@@ -493,6 +493,7 @@
     }
 
     function loadState() {
+      // Just load from localStorage - manual sync via button
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         try {
@@ -501,9 +502,6 @@
           console.error('Failed to load state:', e);
         }
       }
-      
-      // Load from Supabase
-      loadFromSupabase();
     }
 
     function loadFromSheets() {
@@ -531,7 +529,7 @@
       console.log('Key:', SUPABASE_KEY.substring(0, 20) + '...');
       
       const payload = {
-        start_time: state.startTime || Date.now() - 3600000, // Default to 1 hour ago if no start
+        start_time: state.startTime,
         urges: state.urges ? state.urges.length : 0,
         naturals: state.naturals ? state.naturals.length : 0,
         journals: state.journals ? state.journals.length : 0
