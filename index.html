@@ -910,15 +910,14 @@
         // Reset
         state.startTime = null;
         state.currentStreak = { start: null, urgesResisted: 0 };
-        
-        saveState();
+        saveToSupabase('relapse');
         updateUI();
         showToast('Urge logged. Relapsed logged. Try again.');
       } else {
         // Just logged the urge, didn't act
         state.currentStreak.urgesResisted++;
         addActivity(`Urge level ${level}`, Date.now(), 'urge');
-        saveState();
+        saveToSupabase('urge');
         showToast(`Urge level ${level} logged - you stayed strong!`);
       }
       
