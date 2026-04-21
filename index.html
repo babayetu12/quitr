@@ -570,21 +570,26 @@
       .then(data => {
         console.log('Load response:', data);
         if (data && data.length > 0) {
-          // Get the latest start_time from any row
-          let latest = data[0];
-          for (const row of data) {
-            if (row.start_time && (!latest.start_time || row.start_time > latest.start_time)) {
-              latest = row;
-            }
+          // Get MAX from all rows
+          let maxStart = 0, maxUrges = 0, maxNaturals = 0, maxJournals = 0;
+          for (let i = 0; i < data.length; i++) {
+            const row = data[i];
+            if (row.start_time > maxStart) maxStart = row.start_time;
+            if (row.urges > maxUrges) maxUrges = row.urges;
+            if (row.naturals > maxNaturals) maxNaturals = row.naturals;
+            if (row.journals > maxJournals) maxJournals = row.journals;
           }
-          if (latest.start_time) {
-            state.startTime = latest.start_time;
-            // Create arrays of correct length
-            state.urges = Array(latest.urges || 0).fill({});
-            state.naturals = Array(latest.naturals || 0).fill({});
-            state.journals = Array(latest.journals || 0).fill({});
+          console.log('MAX:', maxStart, maxUrges, maxNaturals, maxJournals);
+          if (maxStart > 0) {
+            state.startTime = maxStart;
+            state.urges = [];
+            for (let i = 0; i < maxUrges; i++) state.urges.push({time: Date.now()});
+            state.naturals = [];
+            for (let i = 0; i < maxNaturals; i++) state.naturals.push({time: Date.now()});
+            state.journals = [];
+            for (let i = 0; i < maxJournals; i++) state.journals.push({time: Date.now()});
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-            showToast(`Synced! Urges: ${latest.urges || 0}, Naturals: ${latest.naturals || 0}`);
+            showToast('Synced! Urges:' + maxUrges + ' Naturals:' + maxNaturals);
             updateUI();
             startCounter();
           }
