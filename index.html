@@ -402,6 +402,9 @@
             <button onclick="loadFromSupabase(); showToast('Syncing...')" class="flex-1 glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors text-electric-cyan">
               Sync
             </button>
+            <button onclick="saveToSupabase()" class="flex-1 glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors text-warm-amber">
+              Test Save
+            </button>
           </div>
           <input type="file" id="import-file" class="hidden" accept=".json">
         </section>
@@ -524,6 +527,17 @@
 
     function saveToSupabase() {
       console.log('Saving to Supabase:', state.startTime);
+      console.log('URL:', SUPABASE_URL + '/rest/v1/tracker');
+      console.log('Key:', SUPABASE_KEY.substring(0, 20) + '...');
+      
+      const payload = {
+        start_time: state.startTime || Date.now() - 3600000, // Default to 1 hour ago if no start
+        urges: state.urges ? state.urges.length : 0,
+        naturals: state.naturals ? state.naturals.length : 0,
+        journals: state.journals ? state.journals.length : 0
+      };
+      console.log('Payload:', payload);
+      
       fetch(SUPABASE_URL + '/rest/v1/tracker', {
         method: 'POST',
         headers: {
@@ -532,17 +546,14 @@
           'Authorization': 'Bearer ' + SUPABASE_KEY,
           'Prefer': 'return=minimal'
         },
-        body: JSON.stringify({
-          start_time: state.startTime,
-          urges: state.urges.length,
-          naturals: state.naturals.length,
-          journals: state.journals.length
-        })
+        body: JSON.stringify(payload)
       })
       .then(r => {
-        console.log('Save response:', r.status);
-        if (r.ok) showToast('Saved to database!');
+        console.log('Save status:', r.status);
+        if (r.ok) showToast('Saved!');
+        return r.text();
       })
+      .then(t => console.log('Save response:', t))
       .catch(e => console.log('Save error:', e));
     }
 
