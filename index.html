@@ -556,7 +556,7 @@
 
     function loadFromSupabase() {
       console.log('Loading from Supabase');
-      fetch(SUPABASE_URL + '/rest/v1/tracker?order=created_at.desc&limit=1', {
+      fetch(SUPABASE_URL + '/rest/v1/tracker?select=start_time,urges,naturals,journals&order=created_at.desc&limit=10', {
         headers: {
           'apikey': SUPABASE_KEY,
           'Authorization': 'Bearer ' + SUPABASE_KEY
@@ -565,12 +565,29 @@
       .then(r => r.json())
       .then(data => {
         console.log('Load response:', data);
-        if (data && data.length > 0 && data[0].start_time) {
-          state.startTime = data[0].start_time;
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-          showToast('Synced from database!');
-          updateUI();
-          startCounter();
+        if (data && data.length > 0) {
+          // Get the latest start_time from any row
+          let latest = data[0];
+          for (const row of data) {
+            if (row.start_time && (!latest.start_time || row.start_time > latest.start_time)) {
+              latest = row;
+            }
+          }
+          if (latest.start_time) {
+            state.startTime = latest.start_time;
+            state.urges = state.urges || [];
+            state.urges.length = latest.urges || 0;
+            state.naturals = state.naturals || [];
+            state.naturals.length = latest.naturals || 0;
+            state.journals = state.journals || [];
+            state.journals.length = latest.journals || 0;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            showToast('Synced!');
+            updateUI();
+            startCounter();
+          }
+        } else {
+          showToast('No data found');
         }
       })
       .catch(e => console.log('Load error:', e));
