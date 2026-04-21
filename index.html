@@ -399,8 +399,8 @@
             <button onclick="importData()" class="flex-1 glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors">
               Paste Data
             </button>
-            <button onclick="syncToGoogleForm('journal', {syncTest: Date.now()}); showToast('Sync test triggered!')" class="flex-1 glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors text-electric-cyan">
-              Test Sync
+            <button onclick="loadFromSheets(); showToast('Loading from Sheet...')" class="flex-1 glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors text-electric-cyan">
+              Load Sheet
             </button>
           </div>
           <input type="file" id="import-file" class="hidden" accept=".json">
@@ -500,8 +500,11 @@
         }
       }
       
-      // Try load from Google Sheets
-      loadFromSheets();
+      // If no local data, try load from Sheets
+      if (!state.startTime) {
+        showToast('Loading from Sheet...');
+        loadFromSheets();
+      }
     }
 
     function loadFromSheets() {
