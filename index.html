@@ -513,11 +513,19 @@
 
     function syncToGoogleForm(type, data) {
       try {
-        const img = document.createElement('img');
-        img.src = FORM_URL + '?usp=pp_url&' + ENTRY_TYPE + '=' + encodeURIComponent(type) + '&' + ENTRY_DATA + '=' + encodeURIComponent(JSON.stringify(data));
+        // Use beacon for more reliable cross-origin
+        const payload = ENTRY_TYPE + '=' + encodeURIComponent(type) + '&' + ENTRY_DATA + '=' + encodeURIComponent(JSON.stringify(data));
+        const url = FORM_URL + '?usp=pp_url&' + payload;
+        
+        // Try fetch first
+        fetch(url, { method: 'GET', mode: 'no-cors' }).catch(() => {});
+        
+        // Also try image as backup
+        const img = new Image();
+        img.src = url;
         img.style.display = 'none';
         document.body.appendChild(img);
-        setTimeout(() => { document.body.removeChild(img); }, 2000);
+        setTimeout(() => { try{document.body.removeChild(img);}catch(e){} }, 3000);
       } catch(e) {}
     }
 
