@@ -404,10 +404,10 @@
             <button onclick="importData()" class="flex-1 glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors">
               Paste Data
             </button>
-            <button onclick="loadFromSupabase()" class="flex-1 glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors text-electric-cyan">
+            <button onclick="syncNow()" class="flex-1 glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors text-electric-cyan">
               Sync Now
             </button>
-            <button onclick="syncToSupabase(); showToast('Uploading...')" class="flex-1 glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors text-warm-amber">
+            <button onclick="syncToSupabase('manual'); showToast('Uploading...')" class="flex-1 glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors text-warm-amber">
               Push Data
             </button>
           </div>
@@ -456,16 +456,11 @@
 
     // === STATE MANAGEMENT ===
     const STORAGE_KEY = 'quitr-data';
-    const DEVICE_ID_KEY = 'quitr-device-id';
+    const SYNC_RECORD_ID = 'quitr-global';
     
-    // Generate or retrieve device ID for multi-device tracking
+    // All devices intentionally use the same shared sync record.
     function getDeviceId() {
-      let deviceId = localStorage.getItem(DEVICE_ID_KEY);
-      if (!deviceId) {
-        deviceId = 'device-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem(DEVICE_ID_KEY, deviceId);
-      }
-      return deviceId;
+      return SYNC_RECORD_ID;
     }
     
     let state = {
@@ -514,8 +509,10 @@
 
     async function loadFromSupabaseOnInit() {
       try {
+        const deviceId = getDeviceId();
+        console.log('[INIT] Checking cloud state for device', deviceId);
         const response = await fetch(
-          `${SUPABASE_URL}/rest/v1/tracker?select=*&device_id=eq.${getDeviceId()}&order=created_at.desc&limit=1`,
+          `${SUPABASE_URL}/rest/v1/tracker?select=*&device_id=eq.${deviceId}&order=created_at.desc&limit=1`,
           {
             headers: {
               'apikey': SUPABASE_KEY,
@@ -523,35 +520,54 @@
             }
           }
         );
-        
+
+        console.log('[INIT] Response status:', response.status);
+
         if (response.ok) {
           const data = await response.json();
+          console.log('[INIT] Records found:', data.length);
           if (data && data.length > 0) {
             const remote = data[0];
             const localLastModified = state.lastModified || 0;
             const remoteLastModified = new Date(remote.updated_at).getTime();
-            
+            console.log('[INIT] Comparing local vs remote', { localLastModified, remoteLastModified });
+
             // Use remote if it's newer (server has more recent data)
             if (remoteLastModified > localLastModified && remote.state_data) {
               try {
                 const remoteState = JSON.parse(remote.state_data);
                 state = { ...state, ...remoteState };
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-                console.log('Loaded state from Supabase (remote is newer)');
+                console.log('[INIT] Loaded remote state from Supabase');
               } catch (e) {
-                console.error('Failed to parse remote state:', e);
+                console.error('[INIT] Failed to parse remote state:', e);
               }
+            } else {
+              console.log('[INIT] Keeping local state');
             }
+          } else {
+            console.log('[INIT] No remote rows for this device yet');
           }
+        } else {
+          console.error('[INIT] Cloud check failed:', await response.text());
         }
       } catch (e) {
-        console.error('Failed to load from Supabase on init:', e);
+        console.error('[INIT] Failed to load from Supabase on init:', e);
       }
     }
 
     function saveState() {
       // Update lastModified timestamp
       state.lastModified = Date.now();
+      console.log('[STATE] Saving locally', {
+        startTime: state.startTime,
+        urges: state.urges.length,
+        naturals: state.naturals.length,
+        journals: state.journals.length,
+        streaks: state.streaks.length,
+        milestones: state.milestones.length,
+        lastModified: state.lastModified
+      });
       
       // Save to localStorage immediately
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -559,25 +575,35 @@
       // Sync to Supabase (debounced to avoid too many requests)
       clearTimeout(pendingSyncTimer);
       pendingSyncTimer = setTimeout(() => {
-        syncToSupabase();
+        syncToSupabase('auto');
       }, 1000);
     }
 
-    async function syncToSupabase() {
+    async function syncToSupabase(reason = 'manual') {
       if (syncInProgress) {
-        console.log('Sync already in progress, will retry');
+        console.log('[SYNC] Already in progress, skipping', reason);
         return;
       }
       
       try {
         syncInProgress = true;
         const deviceId = getDeviceId();
+        console.log('[SYNC] Starting', reason, 'sync for device', deviceId);
         
         const payload = {
           device_id: deviceId,
           state_data: JSON.stringify(state),
-          start_time: state.startTime
+          start_time: state.startTime,
+          updated_at: new Date().toISOString()
         };
+        console.log('[SYNC] Payload summary', {
+          startTime: payload.start_time,
+          stateBytes: payload.state_data.length,
+          urges: state.urges.length,
+          naturals: state.naturals.length,
+          journals: state.journals.length,
+          reason
+        });
         
         // Check if we already have a record for this device
         const checkResponse = await fetch(
@@ -592,11 +618,12 @@
         
         if (checkResponse.ok) {
           const existing = await checkResponse.json();
+          console.log('[SYNC] Existing record count:', existing.length);
           
           if (existing && existing.length > 0) {
             // Update existing record
             const recordId = existing[0].id;
-            await fetch(
+            const updateResponse = await fetch(
               `${SUPABASE_URL}/rest/v1/tracker?id=eq.${recordId}`,
               {
                 method: 'PATCH',
@@ -609,10 +636,13 @@
                 body: JSON.stringify(payload)
               }
             );
-            console.log('Updated sync to Supabase');
+            console.log('[SYNC] PATCH status:', updateResponse.status);
+            if (!updateResponse.ok) {
+              console.error('[SYNC] PATCH failed:', await updateResponse.text());
+            }
           } else {
             // Insert new record
-            await fetch(
+            const insertResponse = await fetch(
               `${SUPABASE_URL}/rest/v1/tracker`,
               {
                 method: 'POST',
@@ -625,11 +655,16 @@
                 body: JSON.stringify(payload)
               }
             );
-            console.log('Inserted sync to Supabase');
+            console.log('[SYNC] POST status:', insertResponse.status);
+            if (!insertResponse.ok) {
+              console.error('[SYNC] POST failed:', await insertResponse.text());
+            }
           }
+        } else {
+          console.error('[SYNC] Check failed:', checkResponse.status, await checkResponse.text());
         }
       } catch (e) {
-        console.error('Sync to Supabase failed:', e);
+        console.error('[SYNC] Failed:', e);
       } finally {
         syncInProgress = false;
       }
@@ -637,9 +672,11 @@
 
     async function loadFromSupabase() {
       try {
+        const deviceId = getDeviceId();
+        console.log('[PULL] Starting pull for device', deviceId);
         showToast('Syncing from cloud...');
         const response = await fetch(
-          `${SUPABASE_URL}/rest/v1/tracker?select=*&device_id=eq.${getDeviceId()}&limit=1`,
+          `${SUPABASE_URL}/rest/v1/tracker?select=*&device_id=eq.${deviceId}&limit=1`,
           {
             headers: {
               'apikey': SUPABASE_KEY,
@@ -647,12 +684,21 @@
             }
           }
         );
+        console.log('[PULL] Response status:', response.status);
         
         if (response.ok) {
           const data = await response.json();
+          console.log('[PULL] Rows returned:', data.length);
           if (data && data.length > 0 && data[0].state_data) {
             try {
               const remoteState = JSON.parse(data[0].state_data);
+              console.log('[PULL] Remote summary', {
+                startTime: remoteState.startTime,
+                urges: remoteState.urges?.length || 0,
+                naturals: remoteState.naturals?.length || 0,
+                journals: remoteState.journals?.length || 0,
+                lastModified: remoteState.lastModified
+              });
               state = { ...state, ...remoteState };
               localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
               showToast('Synced! Refreshing...');
@@ -661,19 +707,29 @@
               renderAnalytics();
               if (state.startTime) startCounter();
             } catch (e) {
-              console.error('Failed to parse remote state:', e);
+              console.error('[PULL] Failed to parse remote state:', e);
               showToast('Sync failed: invalid data');
             }
           } else {
+            console.log('[PULL] No remote state_data available');
             showToast('No cloud data found for this device');
           }
         } else {
+          const errorText = await response.text();
+          console.error('[PULL] Network/HTTP error:', response.status, errorText);
           showToast('Sync failed: network error');
         }
       } catch (e) {
-        console.error('Failed to load from Supabase:', e);
+        console.error('[PULL] Failed to load from Supabase:', e);
         showToast('Sync error: ' + e.message);
       }
+    }
+
+    async function syncNow() {
+      console.log('[SYNC NOW] Starting full round-trip sync');
+      await syncToSupabase('manual');
+      await loadFromSupabase();
+      console.log('[SYNC NOW] Finished full round-trip sync');
     }
 
     function setupEventListeners() {
@@ -752,9 +808,6 @@
       updateUI();
       startCounter();
       showToast('Journey started!');
-      
-      // Sync immediately
-      syncToSupabase();
     }
 
     function getLatestStreakStart() {
@@ -854,7 +907,6 @@
       state.currentStreak = { start: null, urgesResisted: 0 };
       
       saveState();
-      syncToSupabase();
       updateUI();
       renderActivityList();
       showToast('Relapse logged. Try again.');
@@ -891,7 +943,6 @@
       
       addActivity('Natural release', Date.now(), 'natural');
       saveState();
-      syncToSupabase();
       showToast('Natural release logged - healthy choice!');
       renderActivityList();
     }
@@ -901,7 +952,6 @@
       state.urges = [];
       state.milestones = state.milestones.filter(m => m.category !== 'urge');
       saveState();
-      syncToSupabase();
       document.getElementById('urges-resisted').textContent = '0';
       renderActivityList();
       showToast('All desires cleared!');
@@ -979,7 +1029,6 @@
         state.startTime = null;
         state.currentStreak = { start: null, urgesResisted: 0 };
         saveState();
-        syncToSupabase();
         updateUI();
         showToast('Urge logged. Relapsed logged. Try again.');
       } else {
@@ -987,7 +1036,6 @@
         state.currentStreak.urgesResisted++;
         addActivity(`Urge level ${level}`, Date.now(), 'urge');
         saveState();
-        syncToSupabase();
         showToast(`Urge level ${level} logged - you stayed strong!`);
       }
       
