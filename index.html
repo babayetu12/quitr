@@ -288,7 +288,12 @@
             <button onclick="clearUrges()" class="glass-light rounded-xl p-4 text-left hover:border-red-500/50 transition-all group">
               <div class="text-2xl mb-1">🗑️</div>
               <div class="font-bold text-white group-hover:text-red-400 transition-colors">Clear desires</div>
-              <div class="text-gray-600 text-xs">Delete all desires</div>
+              <div class="text-gray-600 text-xs">Delete all</div>
+            </button>
+            <button onclick="fullReset()" class="glass-light rounded-xl p-4 text-left hover:border-red-600/50 transition-all group">
+              <div class="text-2xl mb-1">💀</div>
+              <div class="font-bold text-white group-hover:text-red-500 transition-colors">Nuke all</div>
+              <div class="text-gray-600 text-xs">Delete everything</div>
             </button>
             <button onclick="showMilestones()" class="glass-light rounded-xl p-4 text-left hover:border-purple-500/50 transition-all group">
               <div class="text-2xl mb-1">🏆</div>
@@ -846,13 +851,38 @@
     }
 
     function clearUrges() {
-      if (!confirm('Delete all logged desires?')) return;
+      if (!confirm('Delete all logged desires? This cannot be undone.')) return;
       state.urges = [];
-      saveState();
+      state.milestones = state.milestones.filter(m => m.category !== 'urge');
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       saveToSupabase('clear_urges');
-      updateUI();
+      saveState();
+      
+      // Force UI refresh
+      document.getElementById('urges-resisted').textContent = '0';
       renderActivityList();
       showToast('All desires cleared!');
+    }
+
+    function fullReset() {
+      if (!confirm('DELETE EVERYTHING? All data will be lost forever!')) return;
+      if (!confirm('Are you REALLY sure? This is irreversible!')) return;
+      
+      state = {
+        startTime: null,
+        streaks: [],
+        currentStreak: { start: null, urgesResisted: 0 },
+        relapses: [],
+        urges: [],
+        naturals: [],
+        journals: [],
+        milestones: []
+      };
+      
+      localStorage.removeItem(STORAGE_KEY);
+      updateUI();
+      renderActivityList();
+      showToast('Everything deleted!');
     }
 
     // === URGE MODAL ===
