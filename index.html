@@ -586,6 +586,8 @@
     let counterInterval = null;
     let streakChart = null;
     let relapseChart = null;
+    let weeklyChart = null;
+    let eventMixChart = null;
     let syncInProgress = false;
     let pendingSyncTimer = null;
 
@@ -1656,7 +1658,11 @@
       if (!ctx) return;
 
       const canvas = ctx.getContext('2d');
-      if (weeklyChart) weeklyChart.destroy();
+      if (weeklyChart && typeof weeklyChart.destroy === 'function') {
+        weeklyChart.destroy();
+      } else if (weeklyChart) {
+        weeklyChart = null;
+      }
 
       const weekly = getWeeklyHoursData();
       const gradient = canvas.createLinearGradient(0, 0, 0, 220);
@@ -1717,7 +1723,11 @@
       if (!ctx) return;
 
       const canvas = ctx.getContext('2d');
-      if (eventMixChart) eventMixChart.destroy();
+      if (eventMixChart && typeof eventMixChart.destroy === 'function') {
+        eventMixChart.destroy();
+      } else if (eventMixChart) {
+        eventMixChart = null;
+      }
 
       const relapses = state.relapses.length;
       const urges = state.urges.length;
