@@ -670,54 +670,64 @@
       }
     }
 
+    async function fetchRemoteRecord() {
+      const deviceId = getDeviceId();
+      const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/tracker?select=*&device_id=eq.${deviceId}&limit=1`,
+        {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY
+          }
+        }
+      );
+
+      console.log('[REMOTE] Fetch status:', response.status);
+
+      if (!response.ok) {
+        throw new Error(`Remote fetch failed: ${response.status} ${await response.text()}`);
+      }
+
+      const data = await response.json();
+      console.log('[REMOTE] Rows returned:', data.length);
+      return data && data.length > 0 ? data[0] : null;
+    }
+
+    function applyRemoteState(remoteState) {
+      console.log('[PULL] Remote summary', {
+        startTime: remoteState.startTime,
+        urges: remoteState.urges?.length || 0,
+        naturals: remoteState.naturals?.length || 0,
+        journals: remoteState.journals?.length || 0,
+        lastModified: remoteState.lastModified
+      });
+
+      state = { ...state, ...remoteState };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      updateUI();
+      renderActivityList();
+      renderAnalytics();
+      if (state.startTime) startCounter();
+    }
+
     async function loadFromSupabase() {
       try {
-        const deviceId = getDeviceId();
-        console.log('[PULL] Starting pull for device', deviceId);
+        console.log('[PULL] Starting pull for device', getDeviceId());
         showToast('Syncing from cloud...');
-        const response = await fetch(
-          `${SUPABASE_URL}/rest/v1/tracker?select=*&device_id=eq.${deviceId}&limit=1`,
-          {
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Authorization': 'Bearer ' + SUPABASE_KEY
-            }
-          }
-        );
-        console.log('[PULL] Response status:', response.status);
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log('[PULL] Rows returned:', data.length);
-          if (data && data.length > 0 && data[0].state_data) {
-            try {
-              const remoteState = JSON.parse(data[0].state_data);
-              console.log('[PULL] Remote summary', {
-                startTime: remoteState.startTime,
-                urges: remoteState.urges?.length || 0,
-                naturals: remoteState.naturals?.length || 0,
-                journals: remoteState.journals?.length || 0,
-                lastModified: remoteState.lastModified
-              });
-              state = { ...state, ...remoteState };
-              localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-              showToast('Synced! Refreshing...');
-              updateUI();
-              renderActivityList();
-              renderAnalytics();
-              if (state.startTime) startCounter();
-            } catch (e) {
-              console.error('[PULL] Failed to parse remote state:', e);
-              showToast('Sync failed: invalid data');
-            }
-          } else {
-            console.log('[PULL] No remote state_data available');
-            showToast('No cloud data found for this device');
+        const remote = await fetchRemoteRecord();
+
+        if (remote && remote.state_data) {
+          try {
+            const remoteState = JSON.parse(remote.state_data);
+            applyRemoteState(remoteState);
+            showToast('Synced! Refreshing...');
+          } catch (e) {
+            console.error('[PULL] Failed to parse remote state:', e);
+            showToast('Sync failed: invalid data');
           }
         } else {
-          const errorText = await response.text();
-          console.error('[PULL] Network/HTTP error:', response.status, errorText);
-          showToast('Sync failed: network error');
+          console.log('[PULL] No remote state_data available');
+          showToast('No cloud data found for this device');
         }
       } catch (e) {
         console.error('[PULL] Failed to load from Supabase:', e);
@@ -726,9 +736,25 @@
     }
 
     async function syncNow() {
-      console.log('[SYNC NOW] Starting full round-trip sync');
-      await syncToSupabase('manual');
-      await loadFromSupabase();
+      console.log('[SYNC NOW] Starting compare-first sync');
+      try {
+        const remote = await fetchRemoteRecord();
+        const localLastModified = state.lastModified || 0;
+        const remoteLastModified = remote?.updated_at ? new Date(remote.updated_at).getTime() : 0;
+        console.log('[SYNC NOW] Comparing timestamps', { localLastModified, remoteLastModified });
+
+        if (remote && remote.state_data && remoteLastModified > localLastModified) {
+          console.log('[SYNC NOW] Remote is newer, pulling first');
+          await loadFromSupabase();
+        } else {
+          console.log('[SYNC NOW] Local is newer or equal, pushing then pulling');
+          await syncToSupabase('manual');
+          await loadFromSupabase();
+        }
+      } catch (e) {
+        console.error('[SYNC NOW] Failed:', e);
+        showToast('Sync now failed: ' + e.message);
+      }
       console.log('[SYNC NOW] Finished full round-trip sync');
     }
 
