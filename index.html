@@ -328,50 +328,125 @@
     <div id="page-analytics" class="page">
       <div class="max-w-2xl mx-auto px-4">
         
-        <!-- Summary Stats -->
+        <!-- Analytics Hero -->
         <section class="mb-6">
-          <h2 class="font-syne text-2xl font-bold mb-4">Your Progress</h2>
-          <div class="grid grid-cols-2 gap-4">
-            <div class="stat-card rounded-xl p-5">
-              <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Current streak</div>
-              <div id="current-streak" class="font-mono text-2xl text-electric-cyan">0d 0h</div>
-            </div>
-            <div class="stat-card rounded-xl p-5">
-              <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Best streak</div>
-              <div id="longest-streak" class="font-mono text-2xl text-warm-amber">0 days</div>
-            </div>
-            <div class="stat-card rounded-xl p-5">
-              <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Total clean days</div>
-              <div id="total-days" class="font-mono text-2xl text-purple-400">0</div>
-            </div>
-            <div class="stat-card rounded-xl p-5">
-              <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Urges beaten</div>
-              <div id="total-urges" class="font-mono text-2xl text-green-400">0</div>
-            </div>
-            <div class="stat-card rounded-xl p-5">
-              <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Journal entries</div>
-              <div id="total-journals" class="font-mono text-2xl text-cyan-400">0</div>
-            </div>
-            <div class="stat-card rounded-xl p-5">
-              <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Natural releases</div>
-              <div id="total-naturals" class="font-mono text-2xl text-green-400">0</div>
+          <div class="glass rounded-3xl p-6 md:p-8 overflow-hidden relative">
+            <div class="absolute inset-0 bg-gradient-to-br from-electric-cyan/10 via-transparent to-soft-rose/10 pointer-events-none"></div>
+            <div class="relative flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+              <div>
+                <p class="text-xs uppercase tracking-[0.35em] text-gray-500 mb-3">Recovery dashboard</p>
+                <h2 class="font-syne text-3xl md:text-4xl font-bold leading-tight">Your progress, in one place</h2>
+                <p class="text-gray-400 mt-3 max-w-2xl">A better read on the shape of your recovery: streaks, habits, momentum, and the direction you are actually moving.</p>
+              </div>
+              <div class="rounded-2xl border border-electric-cyan/20 bg-deep-charcoal/60 px-5 py-4 min-w-[170px] text-left md:text-right">
+                <div id="current-streak" class="font-mono text-3xl text-electric-cyan">0d 0h</div>
+                <div class="text-gray-500 text-xs uppercase tracking-[0.3em] mt-2">Current streak</div>
+                <div id="next-milestone" class="text-sm text-off-white mt-2">Next milestone: 24h</div>
+              </div>
             </div>
           </div>
         </section>
 
-        <!-- Weekly Chart -->
+        <!-- Summary Stats -->
         <section class="mb-6">
-          <div class="glass rounded-xl p-5">
-            <h3 class="font-syne text-lg font-bold mb-4">This Week</h3>
-            <canvas id="weeklyChart" height="180"></canvas>
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="stat-card rounded-2xl p-5">
+              <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Best streak</div>
+              <div id="longest-streak" class="font-mono text-2xl text-warm-amber">0 days</div>
+            </div>
+            <div class="stat-card rounded-2xl p-5">
+              <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Total clean days</div>
+              <div id="total-days" class="font-mono text-2xl text-purple-400">0</div>
+            </div>
+            <div class="stat-card rounded-2xl p-5">
+              <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Urges handled</div>
+              <div id="total-urges" class="font-mono text-2xl text-green-400">0</div>
+            </div>
+            <div class="stat-card rounded-2xl p-5">
+              <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Relapses</div>
+              <div id="relapse-count" class="font-mono text-2xl text-soft-rose">0</div>
+            </div>
+            <div class="stat-card rounded-2xl p-5">
+              <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Journal entries</div>
+              <div id="total-journals" class="font-mono text-2xl text-cyan-400">0</div>
+            </div>
+            <div class="stat-card rounded-2xl p-5">
+              <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Natural releases</div>
+              <div id="total-naturals" class="font-mono text-2xl text-green-400">0</div>
+            </div>
+            <div class="stat-card rounded-2xl p-5">
+              <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Average streak</div>
+              <div id="avg-clean-hours" class="font-mono text-2xl text-electric-cyan">0h</div>
+            </div>
+            <div class="stat-card rounded-2xl p-5">
+              <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Last activity</div>
+              <div id="last-activity" class="font-mono text-sm text-off-white">None yet</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Charts -->
+        <section class="mb-6">
+          <div class="grid gap-4 lg:grid-cols-5">
+            <div class="glass rounded-2xl p-5 lg:col-span-3">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <h3 class="font-syne text-lg font-bold">Clean hours this week</h3>
+                  <p class="text-gray-500 text-sm">Daily coverage across the last 7 days</p>
+                </div>
+                <div class="text-right">
+                  <div id="weekly-total" class="font-mono text-xl text-electric-cyan">0h</div>
+                  <div class="text-gray-500 text-xs uppercase tracking-[0.2em]">7-day total</div>
+                </div>
+              </div>
+              <canvas id="weeklyChart" height="220"></canvas>
+            </div>
+            <div class="glass rounded-2xl p-5 lg:col-span-2">
+              <div class="mb-4">
+                <h3 class="font-syne text-lg font-bold">Event mix</h3>
+                <p class="text-gray-500 text-sm">What your recovery has been doing lately</p>
+              </div>
+              <div class="relative">
+                <canvas id="eventMixChart" height="220"></canvas>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Recovery Snapshot -->
+        <section class="mb-6">
+          <div class="grid gap-4 md:grid-cols-3">
+            <div class="glass rounded-2xl p-5">
+              <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Stability</div>
+              <div id="stability-score" class="font-mono text-2xl text-electric-cyan">0%</div>
+              <p class="text-gray-500 text-sm mt-2">Based on clean time versus relapse count.</p>
+            </div>
+            <div class="glass rounded-2xl p-5">
+              <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Milestone progress</div>
+              <div class="mt-2 h-2 bg-carbon rounded-full overflow-hidden">
+                <div id="milestone-progress" class="h-full bg-gradient-to-r from-electric-cyan to-warm-amber rounded-full" style="width: 0%"></div>
+              </div>
+              <p id="milestone-copy" class="text-gray-500 text-sm mt-3">0 of 1 hours complete</p>
+            </div>
+            <div class="glass rounded-2xl p-5">
+              <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Momentum</div>
+              <div id="momentum-text" class="font-mono text-2xl text-warm-amber">Starting up</div>
+              <p class="text-gray-500 text-sm mt-2">A compact read on whether the current streak is building fast or just staying alive.</p>
+            </div>
           </div>
         </section>
 
         <!-- Streak History -->
         <section class="mb-6">
-          <div class="glass rounded-xl p-5">
-            <h3 class="font-syne text-lg font-bold mb-4">Your Streaks</h3>
-            <div id="streak-history" class="space-y-2 max-h-48 overflow-y-auto">
+          <div class="glass rounded-2xl p-5">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="font-syne text-lg font-bold">Streak timeline</h3>
+                <p class="text-gray-500 text-sm">Most recent streaks and what they lasted through</p>
+              </div>
+              <div id="streak-count" class="text-xs uppercase tracking-[0.25em] text-gray-500">0 streaks</div>
+            </div>
+            <div id="streak-history" class="space-y-3 max-h-72 overflow-y-auto">
               <div class="text-gray-600 text-sm text-center py-4">No streaks yet. Start your journey!</div>
             </div>
           </div>
@@ -379,8 +454,14 @@
 
         <!-- Milestones -->
         <section class="mb-6">
-          <div class="glass rounded-xl p-5">
-            <h3 class="font-syne text-lg font-bold mb-4">Achievements</h3>
+          <div class="glass rounded-2xl p-5">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="font-syne text-lg font-bold">Achievements</h3>
+                <p class="text-gray-500 text-sm">What this streak has unlocked so far</p>
+              </div>
+              <div id="achievement-count" class="text-xs uppercase tracking-[0.25em] text-gray-500">0 unlocked</div>
+            </div>
             <div id="achievements" class="space-y-3">
               <div class="text-gray-500 text-sm">Start tracking to unlock achievements</div>
             </div>
@@ -389,7 +470,7 @@
 
         <!-- Encouragement -->
         <section class="mb-6">
-          <div class="glass rounded-xl p-5">
+          <div class="glass rounded-2xl p-5 border border-electric-cyan/10">
             <h3 class="font-syne text-lg font-bold mb-4">Keep Going</h3>
             <p id="encouragement" class="text-gray-400 text-sm">Every moment you choose yourself is a victory.</p>
           </div>
@@ -397,17 +478,17 @@
 
         <!-- Data Management -->
         <section class="mb-6">
-          <div class="flex gap-3">
-            <button onclick="copyData()" class="flex-1 glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors">
+          <div class="flex flex-wrap gap-3">
+            <button onclick="copyData()" class="flex-1 min-w-[140px] glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors">
               Copy Data
             </button>
-            <button onclick="importData()" class="flex-1 glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors">
+            <button onclick="importData()" class="flex-1 min-w-[140px] glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors">
               Paste Data
             </button>
-            <button onclick="syncNow()" class="flex-1 glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors text-electric-cyan">
+            <button onclick="syncNow()" class="flex-1 min-w-[140px] glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors text-electric-cyan">
               Sync Now
             </button>
-            <button onclick="syncToSupabase('manual'); showToast('Uploading...')" class="flex-1 glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors text-warm-amber">
+            <button onclick="syncToSupabase('manual'); showToast('Uploading...')" class="flex-1 min-w-[140px] glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors text-warm-amber">
               Push Data
             </button>
           </div>
@@ -1367,66 +1448,56 @@
     }
 
     // === ANALYTICS ===
-    function renderAnalytics() {
-      renderSummaryStats();
-      renderWeeklyChart();
-      renderStreakHistory();
-      renderAchievements();
+    function formatDuration(ms) {
+      const totalMinutes = Math.max(0, Math.floor(ms / 60000));
+      const days = Math.floor(totalMinutes / 1440);
+      const hours = Math.floor((totalMinutes % 1440) / 60);
+      const minutes = totalMinutes % 60;
+
+      if (days > 0) return `${days}d ${hours}h`;
+      if (hours > 0) return `${hours}h ${minutes}m`;
+      return `${minutes}m`;
     }
 
-    function renderSummaryStats() {
-      // Current streak
-      let currentMs = 0;
-      if (state.startTime) {
-        currentMs = Date.now() - state.startTime;
-      }
-      const currentHours = Math.floor(currentMs / (1000 * 60 * 60));
-      const currentDays = Math.floor(currentHours / 24);
-      const currentMins = Math.floor((currentMs % (1000 * 60 * 60)) / (1000 * 60));
-      document.getElementById('current-streak').textContent = `${currentDays}d ${currentHours % 24}h`;
-
-      // Best streak
-      let best = 0;
-      state.streaks.forEach(s => {
-        const days = (s.duration || 0) / (1000 * 60 * 60 * 24);
-        if (days > best) best = days;
-      });
-      if (state.startTime) {
-        const currentDays = (Date.now() - state.startTime) / (1000 * 60 * 60 * 24);
-        if (currentDays > best) best = currentDays;
-      }
-      document.getElementById('longest-streak').textContent = `${Math.floor(best)} days`;
-
-      // Total clean days
-      let totalMs = 0;
-      state.streaks.forEach(s => { totalMs += s.duration || 0; });
-      if (state.startTime) { totalMs += Date.now() - state.startTime; }
+    function getAnalyticsSummary() {
+      const currentMs = state.startTime ? Date.now() - state.startTime : 0;
+      const currentHours = currentMs / (1000 * 60 * 60);
+      const allDurations = [...state.streaks.map(s => s.duration || 0)];
+      if (state.startTime) allDurations.push(currentMs);
+      const totalMs = allDurations.reduce((sum, value) => sum + value, 0);
+      const bestMs = allDurations.length > 0 ? Math.max(...allDurations) : 0;
+      const averageMs = allDurations.length > 0 ? totalMs / allDurations.length : 0;
+      const urgesHandled = state.urges.length + state.streaks.reduce((sum, s) => sum + (s.urgesResisted || 0), 0);
+      const relapses = state.relapses.length;
+      const weeklyHours = getWeeklyHoursData();
       const totalDays = Math.floor(totalMs / (1000 * 60 * 60 * 24));
-      document.getElementById('total-days').textContent = totalDays;
+      const stability = Math.min(100, Math.round((currentHours / Math.max(1, currentHours + relapses * 24)) * 100));
+      const nextMilestoneHours = getNextMilestone(Math.floor(currentHours));
+      const nextMilestoneProgress = nextMilestoneHours ? Math.min(100, (currentHours / nextMilestoneHours) * 100) : 100;
+      const lastActivity = state.milestones && state.milestones.length > 0 ? state.milestones[0] : null;
 
-      // Total urges beaten
-      let totalUrges = state.urges.length;
-      state.streaks.forEach(s => { totalUrges += s.urgesResisted || 0; });
-      document.getElementById('total-urges').textContent = totalUrges;
-
-      // Journals
-      document.getElementById('total-journals').textContent = state.journals.length;
-
-      // Naturals
-      document.getElementById('total-naturals').textContent = state.naturals.length;
+      return {
+        currentMs,
+        currentHours,
+        totalMs,
+        bestMs,
+        averageMs,
+        totalDays,
+        urgesHandled,
+        relapses,
+        weeklyHours,
+        stability,
+        nextMilestoneHours,
+        nextMilestoneProgress,
+        lastActivity
+      };
     }
 
-    let weeklyChart = null;
-
-    function renderWeeklyChart() {
-      const ctx = document.getElementById('weeklyChart');
-      if (!ctx) return;
-      
-      const canvas = ctx.getContext('2d');
-      if (weeklyChart) weeklyChart.destroy();
-
-      const days = [];
+    function getWeeklyHoursData() {
+      const labels = [];
       const hoursData = [];
+      let weeklyTotal = 0;
+
       for (let i = 6; i >= 0; i--) {
         const date = new Date();
         date.setDate(date.getDate() - i);
@@ -1447,97 +1518,110 @@
           }
         }
 
-        days.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
-        hoursData.push(Math.min(soberHours, 24));
+        const dayHours = Math.min(soberHours, 24);
+        labels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+        hoursData.push(dayHours);
+        weeklyTotal += dayHours;
       }
+
+      return { labels, hoursData, weeklyTotal };
+    }
+
+    function renderAnalytics() {
+      renderSummaryStats();
+      renderWeeklyChart();
+      renderEventMixChart();
+      renderStreakHistory();
+      renderAchievements();
+    }
+
+    function renderSummaryStats() {
+      const summary = getAnalyticsSummary();
+      const currentDays = Math.floor(summary.currentHours / 24);
+      const currentHoursRemainder = Math.floor(summary.currentHours % 24);
+
+      document.getElementById('current-streak').textContent = `${currentDays}d ${currentHoursRemainder}h`;
+      document.getElementById('longest-streak').textContent = formatDuration(summary.bestMs);
+      document.getElementById('total-days').textContent = summary.totalDays;
+      document.getElementById('total-urges').textContent = summary.urgesHandled;
+      document.getElementById('relapse-count').textContent = summary.relapses;
+      document.getElementById('total-journals').textContent = state.journals.length;
+      document.getElementById('total-naturals').textContent = state.naturals.length;
+      document.getElementById('avg-clean-hours').textContent = `${Math.round(summary.averageMs / (1000 * 60 * 60))}h`;
+      document.getElementById('weekly-total').textContent = `${summary.weeklyHours.weeklyTotal.toFixed(1)}h`;
+      document.getElementById('stability-score').textContent = `${summary.stability}%`;
+      document.getElementById('milestone-progress').style.width = `${summary.nextMilestoneProgress}%`;
+      document.getElementById('milestone-copy').textContent = summary.nextMilestoneHours
+        ? `${summary.currentHours.toFixed(1)} of ${summary.nextMilestoneHours} hours complete`
+        : 'You have cleared the milestone ladder';
+      document.getElementById('momentum-text').textContent = summary.currentHours >= 168
+        ? 'Locked in'
+        : summary.currentHours >= 72
+          ? 'Strong climb'
+          : summary.currentHours >= 24
+            ? 'Stabilizing'
+            : summary.currentHours > 0
+              ? 'Finding traction'
+              : 'Starting up';
+      document.getElementById('next-milestone').textContent = summary.nextMilestoneHours
+        ? `Next milestone: ${summary.nextMilestoneHours}h`
+        : 'Next milestone: cleared';
+      document.getElementById('last-activity').textContent = summary.lastActivity
+        ? `${summary.lastActivity.type} · ${formatDateDisplay(summary.lastActivity.time)}`
+        : 'None yet';
+    }
+
+    function renderWeeklyChart() {
+      const ctx = document.getElementById('weeklyChart');
+      if (!ctx) return;
+
+      const canvas = ctx.getContext('2d');
+      if (weeklyChart) weeklyChart.destroy();
+
+      const weekly = getWeeklyHoursData();
+      const gradient = canvas.createLinearGradient(0, 0, 0, 220);
+      gradient.addColorStop(0, 'rgba(0, 245, 212, 0.85)');
+      gradient.addColorStop(1, 'rgba(0, 245, 212, 0.15)');
 
       weeklyChart = new Chart(canvas, {
         type: 'bar',
         data: {
-          labels: days,
+          labels: weekly.labels,
           datasets: [{
             label: 'Hours clean',
-            data: hoursData,
-            backgroundColor: hoursData.map(h => h >= 20 ? 'rgba(0, 245, 212, 0.8)' : h >= 12 ? 'rgba(0, 245, 212, 0.5)' : 'rgba(0, 245, 212, 0.3)'),
+            data: weekly.hoursData,
+            backgroundColor: gradient,
             borderColor: '#00F5D4',
             borderWidth: 1,
-            borderRadius: 6
+            borderRadius: 10,
+            hoverBackgroundColor: 'rgba(0, 245, 212, 0.95)'
           }]
         },
         options: {
           responsive: true,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: { beginAtZero: true, max: 24, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#6B7280' } },
-            x: { grid: { display: false }, ticks: { color: '#6B7280' } }
-          }
-        }
-      });
-    }
-
-    function renderStreakChart() {
-      return; // No longer used
-      const ctx = document.getElementById('streakChart').getContext('2d');
-      
-      if (streakChart) streakChart.destroy();
-
-      // Prepare data - last 14 days
-      const days = [];
-      const data = [];
-      for (let i = 13; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        date.setHours(0, 0, 0, 0);
-        const nextDate = new Date(date);
-        nextDate.setDate(nextDate.getDate() + 1);
-
-        let soberHours = 0;
-        
-        // Calculate sober hours for this day
-        state.streaks.forEach(s => {
-          if (s.start && s.end) {
-            if (s.start < nextDate.getTime() && s.end > date.getTime()) {
-              const start = Math.max(s.start, date.getTime());
-              const end = Math.min(s.end, nextDate.getTime());
-              soberHours += (end - start) / (1000 * 60 * 60);
-            }
-          }
-        });
-        
-        if (state.startTime && state.startTime < nextDate.getTime()) {
-          const start = Math.max(state.startTime, date.getTime());
-          const end = Math.min(Date.now(), nextDate.getTime());
-          soberHours += (end - start) / (1000 * 60 * 60);
-        }
-
-        days.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
-        data.push(Math.min(soberHours, 24));
-      }
-
-      streakChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: days,
-          datasets: [{
-            label: 'Hours Sober',
-            data: data,
-            backgroundColor: 'rgba(0, 245, 212, 0.6)',
-            borderColor: '#00F5D4',
-            borderWidth: 1,
-            borderRadius: 4
-          }]
-        },
-        options: {
-          responsive: true,
+          maintainAspectRatio: false,
           plugins: {
-            legend: { display: false }
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#161616',
+              borderColor: 'rgba(0, 245, 212, 0.25)',
+              borderWidth: 1,
+              titleColor: '#F8F8F2',
+              bodyColor: '#F8F8F2',
+              callbacks: {
+                label: context => `${context.raw.toFixed(1)} hours clean`
+              }
+            }
           },
           scales: {
             y: {
               beginAtZero: true,
               max: 24,
               grid: { color: 'rgba(255,255,255,0.05)' },
-              ticks: { color: '#6B7280' }
+              ticks: {
+                color: '#6B7280',
+                callback: value => `${value}h`
+              }
             },
             x: {
               grid: { display: false },
@@ -1548,12 +1632,69 @@
       });
     }
 
+    function renderEventMixChart() {
+      const ctx = document.getElementById('eventMixChart');
+      if (!ctx) return;
+
+      const canvas = ctx.getContext('2d');
+      if (eventMixChart) eventMixChart.destroy();
+
+      const relapses = state.relapses.length;
+      const urges = state.urges.length;
+      const naturals = state.naturals.length;
+      const journals = state.journals.length;
+      const hasData = relapses + urges + naturals + journals > 0;
+      const labels = hasData ? ['Urges', 'Relapses', 'Naturals', 'Journals'] : ['No data'];
+      const data = hasData ? [urges, relapses, naturals, journals] : [1];
+      const colors = hasData
+        ? ['#00F5D4', '#F72585', '#FF9F1C', '#7C3AED']
+        : ['rgba(255,255,255,0.08)'];
+
+      eventMixChart = new Chart(canvas, {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [{
+            data,
+            backgroundColor: colors,
+            borderColor: '#0D0D0D',
+            borderWidth: 3,
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '68%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: '#F8F8F2',
+                usePointStyle: true,
+                pointStyle: 'circle',
+                padding: 16
+              }
+            },
+            tooltip: {
+              backgroundColor: '#161616',
+              borderColor: 'rgba(0, 245, 212, 0.25)',
+              borderWidth: 1,
+              titleColor: '#F8F8F2',
+              bodyColor: '#F8F8F2'
+            }
+          }
+        }
+      });
+    }
+
     function renderStreakHistory() {
       const container = document.getElementById('streak-history');
-      
-      const allStreaks = [...state.streaks];
+      const streakCount = document.getElementById('streak-count');
+      const streaks = [...state.streaks];
+
       if (state.startTime && state.currentStreak.start) {
-        allStreaks.push({
+        streaks.unshift({
           start: state.currentStreak.start,
           end: Date.now(),
           duration: Date.now() - state.currentStreak.start,
@@ -1562,36 +1703,47 @@
         });
       }
 
-      if (allStreaks.length === 0) {
+      streakCount.textContent = `${streaks.length} streak${streaks.length === 1 ? '' : 's'}`;
+
+      if (streaks.length === 0) {
         container.innerHTML = '<div class="text-gray-600 text-sm text-center py-4">Start your first streak today!</div>';
         return;
       }
 
-      container.innerHTML = allStreaks.slice(0, 10).reverse().map((s) => {
-        const days = (s.duration || 0) / (1000 * 60 * 60 * 24);
-        const hours = Math.floor(days * 24);
-        
+      const sorted = streaks.slice().sort((a, b) => (b.start || 0) - (a.start || 0)).slice(0, 8);
+      container.innerHTML = sorted.map((s, index) => {
+        const duration = s.duration || 0;
+        const badge = s.active
+          ? '<span class="px-2 py-1 rounded-full bg-electric-cyan/10 text-electric-cyan text-[11px] uppercase tracking-[0.2em]">Active</span>'
+          : '<span class="px-2 py-1 rounded-full bg-white/5 text-gray-400 text-[11px] uppercase tracking-[0.2em]">Closed</span>';
+        const urgesText = typeof s.urgesResisted === 'number' ? `${s.urgesResisted} urge${s.urgesResisted === 1 ? '' : 's'} resisted` : 'No urge data';
+
         return `
-          <div class="flex items-center justify-between py-2 border-b border-white/5">
-            <span class="text-sm">${formatDateDisplay(s.start)}</span>
-            <span class="font-mono text-sm text-electric-cyan">${Math.floor(days)}d ${hours % 24}h</span>
+          <div class="rounded-xl border border-white/5 bg-black/20 p-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <div class="flex items-center gap-3 mb-1">
+                <span class="text-xs uppercase tracking-[0.25em] text-gray-500">#${index + 1}</span>
+                ${badge}
+              </div>
+              <div class="text-white font-medium">${formatDateDisplay(s.start)}</div>
+              <div class="text-gray-500 text-sm mt-1">${urgesText}</div>
+            </div>
+            <div class="font-mono text-lg text-electric-cyan">${formatDuration(duration)}</div>
           </div>
         `;
-      }).reverse().join('');
+      }).join('');
     }
 
     function renderAchievements() {
       const container = document.getElementById('achievements');
+      const achievementCount = document.getElementById('achievement-count');
       const achievements = [];
 
-      // Calculate total clean time
       let totalMs = 0;
       state.streaks.forEach(s => { totalMs += s.duration || 0; });
       if (state.startTime) { totalMs += Date.now() - state.startTime; }
       const totalHours = totalMs / (1000 * 60 * 60);
-      const totalDays = Math.floor(totalHours / 24);
 
-      // Check milestones
       if (totalHours >= 1) achievements.push({ icon: '🌱', title: 'Hour 1', desc: 'First hour in the books' });
       if (totalHours >= 24) achievements.push({ icon: '☀️', title: '24 Hours', desc: 'A full day clean' });
       if (totalHours >= 72) achievements.push({ icon: '🌙', title: '72 Hours', desc: 'Three days strong' });
@@ -1599,29 +1751,25 @@
       if (totalHours >= 336) achievements.push({ icon: '⭐', title: '2 Weeks', desc: 'Two weeks!' });
       if (totalHours >= 720) achievements.push({ icon: '👑', title: '1 Month', desc: 'A month of freedom!' });
 
-      // Urges beaten
       let urges = state.urges.length;
       state.streaks.forEach(s => { urges += s.urgesResisted || 0; });
       if (urges >= 1) achievements.push({ icon: '💪', title: 'First Win', desc: `Beaten ${urges} urge${urges > 1 ? 's' : ''}` });
       if (urges >= 10) achievements.push({ icon: '🔥', title: 'Tough', desc: '10 urges beaten' });
       if (urges >= 50) achievements.push({ icon: '🦁', title: 'Warrior', desc: '50 urges beaten' });
 
-      // Journals
       if (state.journals.length >= 1) achievements.push({ icon: '📝', title: 'Writer', desc: 'First journal entry' });
       if (state.journals.length >= 10) achievements.push({ icon: '📖', title: 'Reflective', desc: '10 journal entries' });
-
-      // Naturals
       if (state.naturals.length >= 1) achievements.push({ icon: '🌿', title: 'Balanced', desc: 'Healthy release logged' });
-
-      // Streaks
       if (state.streaks.length >= 1) achievements.push({ icon: '📈', title: 'Started', desc: 'First streak begun' });
       if (state.streaks.length >= 5) achievements.push({ icon: '🎯', title: 'Dedicated', desc: '5 attempts' });
 
+      achievementCount.textContent = `${achievements.length} unlocked`;
+
       if (achievements.length === 0) {
-        container.innerHTML = '<div class="text-gray-500 text-sm">Start your journey to unlock achievements!</div>';
+        container.innerHTML = '<div class="text-gray-500 text-sm">Start tracking to unlock achievements!</div>';
       } else {
         container.innerHTML = achievements.map(a => `
-          <div class="flex items-center gap-3 py-2 border-b border-white/5">
+          <div class="flex items-center gap-3 rounded-xl border border-white/5 bg-black/20 px-4 py-3">
             <span class="text-xl">${a.icon}</span>
             <div>
               <div class="text-white font-medium">${a.title}</div>
@@ -1631,7 +1779,6 @@
         `).join('');
       }
 
-      // Encouragement
       const encouragements = [
         'Every moment you choose yourself is a victory.',
         'You are stronger than you know.',
