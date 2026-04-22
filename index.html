@@ -736,26 +736,14 @@
     }
 
     async function syncNow() {
-      console.log('[SYNC NOW] Starting compare-first sync');
+      console.log('[SYNC NOW] Starting pull-only sync');
       try {
-        const remote = await fetchRemoteRecord();
-        const localLastModified = state.lastModified || 0;
-        const remoteLastModified = remote?.updated_at ? new Date(remote.updated_at).getTime() : 0;
-        console.log('[SYNC NOW] Comparing timestamps', { localLastModified, remoteLastModified });
-
-        if (remote && remote.state_data && remoteLastModified > localLastModified) {
-          console.log('[SYNC NOW] Remote is newer, pulling first');
-          await loadFromSupabase();
-        } else {
-          console.log('[SYNC NOW] Local is newer or equal, pushing then pulling');
-          await syncToSupabase('manual');
-          await loadFromSupabase();
-        }
+        await loadFromSupabase();
       } catch (e) {
         console.error('[SYNC NOW] Failed:', e);
         showToast('Sync now failed: ' + e.message);
       }
-      console.log('[SYNC NOW] Finished full round-trip sync');
+      console.log('[SYNC NOW] Finished pull-only sync');
     }
 
     function setupEventListeners() {
