@@ -285,15 +285,10 @@
               <div class="font-bold text-white group-hover:text-green-400 transition-colors">Natural</div>
               <div class="text-gray-600 text-xs">Healthy solo</div>
             </button>
-            <button onclick="clearUrges()" class="glass-light rounded-xl p-4 text-left hover:border-red-500/50 transition-all group">
-              <div class="text-2xl mb-1">🗑️</div>
-              <div class="font-bold text-white group-hover:text-red-400 transition-colors">Clear desires</div>
-              <div class="text-gray-600 text-xs">Delete all</div>
-            </button>
-            <button onclick="fullReset()" class="glass-light rounded-xl p-4 text-left hover:border-red-600/50 transition-all group">
-              <div class="text-2xl mb-1">💀</div>
-              <div class="font-bold text-white group-hover:text-red-500 transition-colors">Nuke all</div>
-              <div class="text-gray-600 text-xs">Delete everything</div>
+            <button onclick="openReasonModal()" class="glass-light rounded-xl p-4 text-left hover:border-soft-rose/50 transition-all group">
+              <div class="text-2xl mb-1">💭</div>
+              <div class="font-bold text-white group-hover:text-soft-rose transition-colors">Add reason</div>
+              <div class="text-gray-600 text-xs">Why you quit</div>
             </button>
             <button onclick="showMilestones()" class="glass-light rounded-xl p-4 text-left hover:border-purple-500/50 transition-all group">
               <div class="text-2xl mb-1">🏆</div>
@@ -318,6 +313,21 @@
           <h3 class="font-syne text-lg font-bold mb-4 text-gray-400">Recent Activity</h3>
           <div id="activity-list" class="space-y-2">
             <div class="text-gray-600 text-sm text-center py-4">No activity yet</div>
+          </div>
+        </section>
+
+        <!-- Advanced Options -->
+        <section class="mb-6">
+          <button onclick="toggleAdvanced()" class="font-syne text-sm font-bold text-gray-500 hover:text-gray-300 transition-colors flex items-center gap-2">
+            <span id="advanced-arrow">▶</span>
+            Advanced options
+          </button>
+          <div id="advanced-section" class="hidden mt-4 space-y-3">
+            <button onclick="clearUrges()" class="glass-light rounded-xl p-4 text-left hover:border-red-500/50 transition-all group w-full">
+              <div class="text-2xl mb-1">🗑️</div>
+              <div class="font-bold text-white group-hover:text-red-400 transition-colors">Clear desires</div>
+              <div class="text-gray-600 text-xs">Remove all logged urges</div>
+            </button>
           </div>
         </section>
 
@@ -525,6 +535,22 @@
     </div>
   </div>
 
+  <div id="reason-modal" class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center p-4">
+    <div class="glass rounded-2xl p-6 w-full max-w-lg">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-syne text-xl font-bold">Add a Reason to Keep Going</h3>
+        <button onclick="closeReasonModal()" class="text-gray-500 hover:text-white text-2xl">&times;</button>
+      </div>
+      <p class="text-gray-400 text-sm mb-4">What's one reason you want to stay clean? This will show up when you need motivation.</p>
+      <textarea id="reason-input" class="w-full bg-carbon border border-electric-cyan/30 rounded-lg p-3 text-off-white placeholder-gray-600 focus:outline-none focus:border-electric-cyan resize-none" rows="4" placeholder="Write your reason here..."></textarea>
+      <div class="text-xs text-gray-500 mt-2">Keep it personal and powerful</div>
+      <div class="flex justify-end gap-3 mt-6">
+        <button onclick="closeReasonModal()" class="text-gray-500 hover:text-white">Cancel</button>
+        <button onclick="saveReason()" class="bg-soft-rose text-off-white font-bold px-6 py-2 rounded-lg hover:bg-soft-rose/80 transition-colors">Save reason</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 glass rounded-lg px-6 py-3 transform transition-all duration-300 translate-y-20 opacity-0 pointer-events-none z-50">
     <span id="toast-text"></span>
@@ -553,6 +579,7 @@
       naturals: [],
       journals: [],
       milestones: [],
+      reasons: [],
       lastModified: Date.now()
     };
 
@@ -1393,9 +1420,62 @@
 
     setInterval(nextQuote, 12000);
 
+    function openReasonModal() {
+      document.getElementById('reason-modal').classList.remove('hidden');
+      document.getElementById('reason-modal').classList.add('flex');
+      document.getElementById('reason-input').value = '';
+      document.getElementById('reason-input').focus();
+    }
+
+    function closeReasonModal() {
+      document.getElementById('reason-modal').classList.add('hidden');
+      document.getElementById('reason-modal').classList.remove('flex');
+    }
+
+    function saveReason() {
+      const text = document.getElementById('reason-input').value.trim();
+      if (!text) {
+        showToast('Please write a reason');
+        return;
+      }
+      
+      state.reasons.push({
+        text: text,
+        time: Date.now()
+      });
+      
+      saveState();
+      showToast('Reason saved! It will show in motivation.');
+      closeReasonModal();
+    }
+
+    function toggleAdvanced() {
+      const section = document.getElementById('advanced-section');
+      const arrow = document.getElementById('advanced-arrow');
+      section.classList.toggle('hidden');
+      arrow.textContent = section.classList.contains('hidden') ? '▶' : '▼';
+    }
+
     function showMotivational() {
+      // Combine custom reasons with inspiring quotes
+      let allOptions = [];
+      
+      // Add custom reasons
+      if (state.reasons && state.reasons.length > 0) {
+        allOptions = state.reasons.map(r => ({
+          text: r.text,
+          author: 'Your reason',
+          isCustom: true
+        }));
+      }
+      
+      // Add random quote
       const q = quotes[Math.floor(Math.random() * quotes.length)];
-      const msg = q.text + '\n\n— ' + q.author;
+      allOptions.push(q);
+      
+      // Pick a random option (preferring custom reasons slightly if available)
+      const selected = allOptions[Math.floor(Math.random() * allOptions.length)];
+      const msg = selected.text + '\n\n— ' + selected.author;
       alert(msg);
     }
 
