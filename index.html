@@ -285,6 +285,11 @@
               <div class="font-bold text-white group-hover:text-green-400 transition-colors">Natural</div>
               <div class="text-gray-600 text-xs">Healthy solo</div>
             </button>
+            <button onclick="clearUrges()" class="glass-light rounded-xl p-4 text-left hover:border-red-500/50 transition-all group">
+              <div class="text-2xl mb-1">🗑️</div>
+              <div class="font-bold text-white group-hover:text-red-400 transition-colors">Clear desires</div>
+              <div class="text-gray-600 text-xs">Delete all desires</div>
+            </button>
             <button onclick="showMilestones()" class="glass-light rounded-xl p-4 text-left hover:border-purple-500/50 transition-all group">
               <div class="text-2xl mb-1">🏆</div>
               <div class="font-bold text-white group-hover:text-purple-400 transition-colors">Milestones</div>
@@ -838,6 +843,16 @@
       saveState();
       showToast('Natural release logged - healthy choice!');
       renderActivityList();
+    }
+
+    function clearUrges() {
+      if (!confirm('Delete all logged desires?')) return;
+      state.urges = [];
+      saveState();
+      saveToSupabase('clear_urges');
+      updateUI();
+      renderActivityList();
+      showToast('All desires cleared!');
     }
 
     // === URGE MODAL ===
