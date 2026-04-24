@@ -221,32 +221,52 @@
           </div>
         </section>
 
-        <!-- Tracker Snapshot -->
+        <!-- Tracker Dashboard -->
         <section class="mb-6">
-          <div class="glass rounded-2xl p-5">
-            <div class="flex items-center justify-between mb-4">
-              <div>
-                <h3 class="font-syne text-lg font-bold text-electric-cyan">Tracker snapshot</h3>
-                <p class="text-gray-500 text-sm">Useful context, without repeating the timer</p>
+          <div class="glass rounded-3xl p-5 md:p-6 overflow-hidden relative">
+            <div class="absolute inset-0 bg-gradient-to-br from-electric-cyan/8 via-transparent to-warm-amber/8 pointer-events-none"></div>
+            <div class="relative">
+              <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-5">
+                <div>
+                  <p class="text-xs uppercase tracking-[0.35em] text-gray-500 mb-2">Tracker dashboard</p>
+                  <h3 id="tracker-status-title" class="font-syne text-2xl font-bold text-electric-cyan">Ready to start</h3>
+                  <p id="tracker-status-copy" class="text-gray-400 text-sm mt-2 max-w-xl">Set your start time and the dashboard will begin reading your recovery in context.</p>
+                </div>
+                <div class="rounded-2xl border border-electric-cyan/15 bg-deep-charcoal/70 px-4 py-3 min-w-[180px]">
+                  <div class="text-[11px] uppercase tracking-[0.25em] text-gray-500">Next checkpoint</div>
+                  <div id="tracker-next-checkpoint" class="font-mono text-2xl text-electric-cyan mt-1">1h</div>
+                  <div id="tracker-next-copy" class="text-gray-500 text-xs mt-1">Start the journey to unlock checkpoints.</div>
+                </div>
               </div>
-              <div id="snapshot-tone" class="text-xs uppercase tracking-[0.25em] text-gray-500">steady</div>
-            </div>
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <div class="rounded-xl border border-white/5 bg-black/20 p-4">
-                <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Started</div>
-                <div id="snapshot-started" class="font-mono text-sm text-off-white">Not started</div>
+
+              <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+                <div class="rounded-xl border border-white/5 bg-black/20 p-4">
+                  <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Started</div>
+                  <div id="tracker-started" class="font-mono text-sm text-off-white">Not started yet</div>
+                </div>
+                <div class="rounded-xl border border-white/5 bg-black/20 p-4">
+                  <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Urges tracked</div>
+                  <div id="tracker-urges" class="font-mono text-2xl text-warm-amber">0</div>
+                </div>
+                <div class="rounded-xl border border-white/5 bg-black/20 p-4">
+                  <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Last urge</div>
+                  <div id="tracker-last-urge" class="font-mono text-lg text-soft-rose">None logged</div>
+                </div>
+                <div class="rounded-xl border border-white/5 bg-black/20 p-4">
+                  <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Current tone</div>
+                  <div id="tracker-tone" class="font-mono text-lg text-electric-cyan">Idle</div>
+                </div>
               </div>
-              <div class="rounded-xl border border-white/5 bg-black/20 p-4">
-                <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Urges logged</div>
-                <div id="snapshot-urges" class="font-mono text-2xl text-warm-amber">0</div>
-              </div>
-              <div class="rounded-xl border border-white/5 bg-black/20 p-4">
-                <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Last urge</div>
-                <div id="snapshot-last-urge" class="font-mono text-lg text-soft-rose">None yet</div>
-              </div>
-              <div class="rounded-xl border border-white/5 bg-black/20 p-4">
-                <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Next checkpoint</div>
-                <div id="snapshot-next-checkpoint" class="font-mono text-lg text-electric-cyan">1h</div>
+
+              <div class="grid gap-3 md:grid-cols-2">
+                <div class="rounded-2xl border border-white/5 bg-black/20 p-4">
+                  <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-2">What to do now</div>
+                  <div id="tracker-action-plan" class="text-off-white leading-relaxed">Set your start time, then keep the next 24 hours simple and boring.</div>
+                </div>
+                <div class="rounded-2xl border border-white/5 bg-black/20 p-4">
+                  <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-2">Momentum note</div>
+                  <div id="tracker-momentum-note" class="text-off-white leading-relaxed">You do not need a perfect streak to build a better one.</div>
+                </div>
               </div>
             </div>
           </div>
@@ -983,21 +1003,7 @@
 
       document.getElementById('main-time').textContent = `${h}:${m}:${s}`;
 
-      const nextCheckpoint = getNextMilestone(hours);
-      const nextCheckpointLabel = nextCheckpoint ? `${nextCheckpoint}h` : 'complete';
-      const lastUrge = Array.isArray(state.urges) && state.urges.length > 0 ? state.urges[state.urges.length - 1] : null;
-
-      document.getElementById('snapshot-started').textContent = formatDateDisplay(state.startTime);
-      document.getElementById('snapshot-urges').textContent = state.urges ? state.urges.length : 0;
-      document.getElementById('snapshot-last-urge').textContent = lastUrge
-        ? `Lvl ${lastUrge.level} · ${formatDateDisplay(lastUrge.time)}`
-        : 'None yet';
-      document.getElementById('snapshot-next-checkpoint').textContent = nextCheckpointLabel;
-
-      const tone = document.getElementById('snapshot-tone');
-      if (tone) {
-        tone.textContent = hours >= 168 ? 'locked in' : hours >= 72 ? 'strong' : hours >= 24 ? 'steady' : 'building';
-      }
+      updateTrackerDashboard();
     }
 
     function getNextMilestone(currentHours) {
@@ -1006,6 +1012,102 @@
         if (currentHours < m) return m;
       }
       return null;
+    }
+
+    function getTrackerDashboardState() {
+      if (!state.startTime) {
+        return {
+          statusTitle: 'Ready to start',
+          statusCopy: 'Set your start time and the dashboard will begin reading your recovery in context.',
+          started: 'Not started yet',
+          urges: '0',
+          lastUrge: 'None logged',
+          tone: 'Idle',
+          nextCheckpoint: '1h',
+          nextCopy: 'Start the journey to unlock checkpoints.',
+          actionPlan: 'Set your start time, then keep the next 24 hours simple and boring.',
+          momentumNote: 'You do not need a perfect streak to build a better one.'
+        };
+      }
+
+      const elapsedHours = (Date.now() - state.startTime) / (1000 * 60 * 60);
+      const cleanHours = Math.max(0, elapsedHours);
+      const nextCheckpoint = getNextMilestone(Math.floor(cleanHours));
+      const lastUrge = Array.isArray(state.urges) && state.urges.length > 0 ? state.urges[state.urges.length - 1] : null;
+      const hours = Math.floor(cleanHours);
+      const days = Math.floor(hours / 24);
+      const tone = hours >= 168 ? 'Locked in' : hours >= 72 ? 'Strong' : hours >= 24 ? 'Steady' : 'Building';
+
+      let statusTitle = 'Building momentum';
+      let statusCopy = `You have been clear for ${hours}h ${Math.floor(cleanHours % 1 * 60)}m. Keep the next move simple.`;
+      let actionPlan = 'Stay boring on purpose: water, movement, no testing yourself, and no isolation.';
+      let momentumNote = 'Small clean decisions are compounding into something real.';
+
+      if (hours >= 168) {
+        statusTitle = 'You are locked in';
+        statusCopy = `More than ${days} clean day${days === 1 ? '' : 's'} in, and the structure is working.`;
+        actionPlan = 'Protect the streak with routine: sleep, food, movement, and fewer late-night decisions.';
+        momentumNote = 'This is no longer a rescue mission. It is a system you are maintaining.';
+      } else if (hours >= 72) {
+        statusTitle = 'Past the rough edge';
+        statusCopy = 'The urgent phase is fading. Now the job is consistency, not intensity.';
+        actionPlan = 'Do not celebrate with risk. Keep the day simple and predictable.';
+        momentumNote = 'You are no longer fighting only cravings. You are building identity.';
+      } else if (hours >= 24) {
+        statusTitle = 'Stabilizing';
+        statusCopy = 'The first-day noise has eased. Protect sleep and keep your environment low-friction.';
+        actionPlan = 'Avoid being alone with the trigger window. Move, message someone, or change rooms early.';
+        momentumNote = 'Momentum is real now. Do not make the day harder than it needs to be.';
+      }
+
+      if (lastUrge && Number(lastUrge.level) >= 7) {
+        actionPlan = `Your last urge was ${lastUrge.level}/10. Interrupt fast: stand up, leave the room, and do one reset action.`;
+        momentumNote = 'High urges are data, not failure. They tell you where the friction needs to go.';
+      } else if (lastUrge) {
+        momentumNote = 'You are catching urges before they become a problem. That matters.';
+      }
+
+      return {
+        statusTitle,
+        statusCopy,
+        started: formatDateDisplay(state.startTime),
+        urges: String(state.urges ? state.urges.length : 0),
+        lastUrge: lastUrge ? `Lvl ${lastUrge.level} · ${formatDateDisplay(lastUrge.time)}` : 'None logged',
+        tone,
+        nextCheckpoint: nextCheckpoint ? `${nextCheckpoint}h` : 'complete',
+        nextCopy: nextCheckpoint ? `Aim for the ${nextCheckpoint} hour checkpoint.` : 'You have cleared the planned checkpoints.',
+        actionPlan,
+        momentumNote
+      };
+    }
+
+    function updateTrackerDashboard() {
+      const elements = {
+        statusTitle: document.getElementById('tracker-status-title'),
+        statusCopy: document.getElementById('tracker-status-copy'),
+        started: document.getElementById('tracker-started'),
+        urges: document.getElementById('tracker-urges'),
+        lastUrge: document.getElementById('tracker-last-urge'),
+        tone: document.getElementById('tracker-tone'),
+        nextCheckpoint: document.getElementById('tracker-next-checkpoint'),
+        nextCopy: document.getElementById('tracker-next-copy'),
+        actionPlan: document.getElementById('tracker-action-plan'),
+        momentumNote: document.getElementById('tracker-momentum-note')
+      };
+
+      if (!elements.statusTitle || !elements.statusCopy) return;
+
+      const tracker = getTrackerDashboardState();
+      elements.statusTitle.textContent = tracker.statusTitle;
+      elements.statusCopy.textContent = tracker.statusCopy;
+      elements.started.textContent = tracker.started;
+      elements.urges.textContent = tracker.urges;
+      elements.lastUrge.textContent = tracker.lastUrge;
+      elements.tone.textContent = tracker.tone;
+      elements.nextCheckpoint.textContent = tracker.nextCheckpoint;
+      elements.nextCopy.textContent = tracker.nextCopy;
+      elements.actionPlan.textContent = tracker.actionPlan;
+      elements.momentumNote.textContent = tracker.momentumNote;
     }
 
     function updateUI() {
@@ -1021,6 +1123,8 @@
         document.getElementById('counter-actions').classList.add('hidden');
         document.getElementById('relapse-time').value = formatDateForInput(Date.now());
       }
+
+      updateTrackerDashboard();
     }
 
     function editTime() {
@@ -1099,10 +1203,7 @@
       state.urges = [];
       state.milestones = state.milestones.filter(m => m.category !== 'urge');
       saveState();
-      const urgesEl = document.getElementById('snapshot-urges');
-      const lastUrgeEl = document.getElementById('snapshot-last-urge');
-      if (urgesEl) urgesEl.textContent = '0';
-      if (lastUrgeEl) lastUrgeEl.textContent = 'None yet';
+      updateTrackerDashboard();
       renderActivityList();
       showToast('All desires cleared!');
     }
