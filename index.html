@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -625,7 +625,9 @@
     // === STATE MANAGEMENT ===
     const STORAGE_KEY = 'quitr-data';
     const AUTH_EMAIL_KEY = 'quitr-auth-email';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabase = window.supabase && typeof window.supabase.createClient === 'function'
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+      : null;
     let currentUser = null;
     let authReady = false;
 
@@ -658,10 +660,18 @@
     async function init() {
       loadState();
       setupEventListeners();
-      await bootstrapAuth();
-      if (currentUser) {
-        await loadFromSupabaseOnInit();
+
+      if (supabase) {
+        await bootstrapAuth();
+        if (currentUser) {
+          await loadFromSupabaseOnInit();
+        }
+      } else {
+        console.error('[AUTH] Supabase auth client failed to initialize');
+        setAuthMessage('Authentication unavailable. Reload the page.', true);
+        showToast('Auth failed to load. Local mode only.');
       }
+
       updateUI();
       if (state.startTime) startCounter();
       renderActivityList();
@@ -711,6 +721,11 @@
     }
 
     async function bootstrapAuth() {
+      if (!supabase) {
+        setAuthUI();
+        return;
+      }
+
       try {
         const { data, error } = await supabase.auth.getSession();
         if (error) {
@@ -743,6 +758,11 @@
     }
 
     async function signInWithEmailPassword() {
+      if (!supabase) {
+        setAuthMessage('Authentication unavailable. Reload the page.', true);
+        return;
+      }
+
       const email = (document.getElementById('auth-email')?.value || '').trim();
       const password = (document.getElementById('auth-password')?.value || '').trim();
 
@@ -764,6 +784,11 @@
     }
 
     async function signUpWithEmailPassword() {
+      if (!supabase) {
+        setAuthMessage('Authentication unavailable. Reload the page.', true);
+        return;
+      }
+
       const email = (document.getElementById('auth-email')?.value || '').trim();
       const password = (document.getElementById('auth-password')?.value || '').trim();
 
@@ -793,6 +818,11 @@
     }
 
     async function signOutUser() {
+      if (!supabase) {
+        showToast('Authentication unavailable');
+        return;
+      }
+
       const { error } = await supabase.auth.signOut();
       if (error) {
         showToast('Sign out failed: ' + error.message);
