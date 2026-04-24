@@ -446,6 +446,42 @@
           </div>
         </section>
 
+        <!-- Urge Insights -->
+        <section class="mb-6">
+          <div class="glass rounded-2xl p-5">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="font-syne text-lg font-bold">Urge insights</h3>
+                <p class="text-gray-500 text-sm">Patterns that help you stay ahead of cravings</p>
+              </div>
+              <div id="urge-insights-count" class="text-xs uppercase tracking-[0.25em] text-gray-500">0 logs</div>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              <div class="stat-card rounded-xl p-4">
+                <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Average intensity</div>
+                <div id="insight-avg-intensity" class="font-mono text-2xl text-warm-amber">0.0</div>
+              </div>
+              <div class="stat-card rounded-xl p-4">
+                <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-1">High-intensity share</div>
+                <div id="insight-high-share" class="font-mono text-2xl text-soft-rose">0%</div>
+              </div>
+              <div class="stat-card rounded-xl p-4">
+                <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Peak hour window</div>
+                <div id="insight-peak-hour" class="font-mono text-lg text-electric-cyan">--</div>
+              </div>
+              <div class="stat-card rounded-xl p-4">
+                <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Most vulnerable day</div>
+                <div id="insight-peak-day" class="font-mono text-lg text-purple-400">--</div>
+              </div>
+            </div>
+
+            <div id="urge-insights-list" class="space-y-3">
+              <div class="text-gray-500 text-sm">Log a few urges to unlock personalized insights.</div>
+            </div>
+          </div>
+        </section>
+
         <!-- Streak History -->
         <section class="mb-6">
           <div class="glass rounded-2xl p-5">
@@ -1613,8 +1649,134 @@
       renderSummaryStats();
       renderWeeklyChart();
       renderEventMixChart();
+      renderUrgeInsights();
       renderStreakHistory();
       renderAchievements();
+    }
+
+    function getUrgeInsights() {
+      const urges = Array.isArray(state.urges) ? state.urges : [];
+      if (urges.length === 0) {
+        return {
+          count: 0,
+          avgIntensity: 0,
+          highShare: 0,
+          peakHourLabel: '--',
+          peakDayLabel: '--',
+          trendLabel: 'No trend yet',
+          recoveryWindowLabel: 'Not enough data yet',
+          coachTips: []
+        };
+      }
+
+      const hourlyBuckets = new Array(24).fill(0);
+      const dailyBuckets = new Array(7).fill(0);
+      const now = Date.now();
+      const weekMs = 7 * 24 * 60 * 60 * 1000;
+      let totalIntensity = 0;
+      let highIntensityCount = 0;
+      let recentCount = 0;
+      let previousCount = 0;
+
+      for (const urge of urges) {
+        const level = Math.max(1, Math.min(10, Number(urge.level) || 0));
+        const time = Number(urge.time) || now;
+        const date = new Date(time);
+        const hour = date.getHours();
+        const day = date.getDay();
+
+        totalIntensity += level;
+        if (level >= 7) highIntensityCount += 1;
+        hourlyBuckets[hour] += 1;
+        dailyBuckets[day] += 1;
+
+        if (time >= now - weekMs) {
+          recentCount += 1;
+        } else if (time >= now - (2 * weekMs)) {
+          previousCount += 1;
+        }
+      }
+
+      const avgIntensity = totalIntensity / urges.length;
+      const highShare = (highIntensityCount / urges.length) * 100;
+
+      const peakHour = hourlyBuckets.indexOf(Math.max(...hourlyBuckets));
+      const peakHourEnd = (peakHour + 1) % 24;
+      const peakHourLabel = `${String(peakHour).padStart(2, '0')}:00-${String(peakHourEnd).padStart(2, '0')}:00`;
+
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const peakDay = dailyBuckets.indexOf(Math.max(...dailyBuckets));
+      const peakDayLabel = dayNames[peakDay];
+
+      let trendLabel = 'Steady compared with last week';
+      if (previousCount === 0 && recentCount > 0) {
+        trendLabel = 'This week has your first logged urge pattern';
+      } else if (recentCount >= previousCount + 2) {
+        trendLabel = 'Urges are up vs last week';
+      } else if (recentCount + 2 <= previousCount) {
+        trendLabel = 'Urges are down vs last week';
+      }
+
+      const lowToMid = urges.filter(u => (Number(u.level) || 0) <= 6).length;
+      const recoveryWindowLabel = lowToMid >= urges.length * 0.6
+        ? 'Most urges are manageable (1-6). Early intervention is working.'
+        : 'Many urges are spiking (7-10). Build friction before peak times.';
+
+      const coachTips = [];
+      coachTips.push(`Plan a 10-minute replacement routine before ${peakHourLabel}.`);
+      coachTips.push(highShare >= 40
+        ? 'High-intensity urges are common. Use stronger interruption: phone away + walk + cold water.'
+        : 'Most urges stay below high intensity. Catch them early with short resets and breathing.');
+      coachTips.push(recentCount > previousCount
+        ? 'This week is heavier. Reduce exposure windows and tighten evening structure.'
+        : 'You are not trending worse. Keep repeating what is already working.');
+
+      return {
+        count: urges.length,
+        avgIntensity,
+        highShare,
+        peakHourLabel,
+        peakDayLabel,
+        trendLabel,
+        recoveryWindowLabel,
+        coachTips
+      };
+    }
+
+    function renderUrgeInsights() {
+      const countEl = document.getElementById('urge-insights-count');
+      const avgEl = document.getElementById('insight-avg-intensity');
+      const highShareEl = document.getElementById('insight-high-share');
+      const peakHourEl = document.getElementById('insight-peak-hour');
+      const peakDayEl = document.getElementById('insight-peak-day');
+      const listEl = document.getElementById('urge-insights-list');
+      if (!countEl || !avgEl || !highShareEl || !peakHourEl || !peakDayEl || !listEl) return;
+
+      const insights = getUrgeInsights();
+      countEl.textContent = `${insights.count} log${insights.count === 1 ? '' : 's'}`;
+      avgEl.textContent = insights.avgIntensity.toFixed(1);
+      highShareEl.textContent = `${Math.round(insights.highShare)}%`;
+      peakHourEl.textContent = insights.peakHourLabel;
+      peakDayEl.textContent = insights.peakDayLabel;
+
+      if (insights.count === 0) {
+        listEl.innerHTML = '<div class="text-gray-500 text-sm">Log a few urges to unlock personalized insights.</div>';
+        return;
+      }
+
+      listEl.innerHTML = `
+        <div class="rounded-xl border border-white/5 bg-black/20 p-4">
+          <div class="text-gray-500 text-xs uppercase tracking-[0.2em] mb-2">Trend</div>
+          <div class="text-off-white">${insights.trendLabel}</div>
+        </div>
+        <div class="rounded-xl border border-white/5 bg-black/20 p-4">
+          <div class="text-gray-500 text-xs uppercase tracking-[0.2em] mb-2">Read on intensity</div>
+          <div class="text-off-white">${insights.recoveryWindowLabel}</div>
+        </div>
+        ${insights.coachTips.map(tip => `
+          <div class="rounded-xl border border-electric-cyan/15 bg-electric-cyan/5 p-4 text-sm text-off-white">${tip}</div>
+        `).join('')}
+      `;
     }
 
     function renderSummaryStats() {
