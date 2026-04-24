@@ -625,7 +625,7 @@
     // === STATE MANAGEMENT ===
     const STORAGE_KEY = 'quitr-data';
     const AUTH_EMAIL_KEY = 'quitr-auth-email';
-    const supabase = window.supabase && typeof window.supabase.createClient === 'function'
+    const supabaseClient = window.supabase && typeof window.supabase.createClient === 'function'
       ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
       : null;
     let currentUser = null;
@@ -661,7 +661,7 @@
       loadState();
       setupEventListeners();
 
-      if (supabase) {
+      if (supabaseClient) {
         await bootstrapAuth();
         if (currentUser) {
           await loadFromSupabaseOnInit();
@@ -721,13 +721,13 @@
     }
 
     async function bootstrapAuth() {
-      if (!supabase) {
+      if (!supabaseClient) {
         setAuthUI();
         return;
       }
 
       try {
-        const { data, error } = await supabase.auth.getSession();
+        const { data, error } = await supabaseClient.auth.getSession();
         if (error) {
           console.error('[AUTH] Session check failed:', error.message);
         }
@@ -737,7 +737,7 @@
         console.error('[AUTH] Bootstrap failed:', e);
       }
 
-      supabase.auth.onAuthStateChange(async (_event, session) => {
+      supabaseClient.auth.onAuthStateChange(async (_event, session) => {
         const previousUserId = currentUser?.id;
         currentUser = session?.user || null;
         if (currentUser?.email) {
@@ -758,7 +758,7 @@
     }
 
     async function signInWithEmailPassword() {
-      if (!supabase) {
+      if (!supabaseClient) {
         setAuthMessage('Authentication unavailable. Reload the page.', true);
         return;
       }
@@ -772,7 +772,7 @@
       }
 
       setAuthMessage('Signing in...');
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
       if (error) {
         setAuthMessage(error.message, true);
         return;
@@ -784,7 +784,7 @@
     }
 
     async function signUpWithEmailPassword() {
-      if (!supabase) {
+      if (!supabaseClient) {
         setAuthMessage('Authentication unavailable. Reload the page.', true);
         return;
       }
@@ -802,7 +802,7 @@
       }
 
       setAuthMessage('Creating account...');
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      const { data, error } = await supabaseClient.auth.signUp({ email, password });
       if (error) {
         setAuthMessage(error.message, true);
         return;
@@ -818,12 +818,12 @@
     }
 
     async function signOutUser() {
-      if (!supabase) {
+      if (!supabaseClient) {
         showToast('Authentication unavailable');
         return;
       }
 
-      const { error } = await supabase.auth.signOut();
+      const { error } = await supabaseClient.auth.signOut();
       if (error) {
         showToast('Sign out failed: ' + error.message);
         return;
@@ -840,7 +840,7 @@
         }
 
         console.log('[INIT] Checking cloud state for user', ownerId);
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
           .from('tracker')
           .select('*')
           .eq('device_id', ownerId)
@@ -936,7 +936,7 @@
           reason
         });
 
-        const { data: existing, error: checkError } = await supabase
+        const { data: existing, error: checkError } = await supabaseClient
           .from('tracker')
           .select('id')
           .eq('device_id', ownerId)
@@ -954,7 +954,7 @@
 
         if (existing && existing.length > 0) {
           const recordId = existing[0].id;
-          const { error: updateError } = await supabase
+          const { error: updateError } = await supabaseClient
             .from('tracker')
             .update(payload)
             .eq('id', recordId);
@@ -968,7 +968,7 @@
             showToast('Uploaded securely');
           }
         } else {
-          const { error: insertError } = await supabase
+          const { error: insertError } = await supabaseClient
             .from('tracker')
             .insert(payload);
 
@@ -997,7 +997,7 @@
         throw new Error('Sign in required');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('tracker')
         .select('*')
         .eq('device_id', ownerId)
