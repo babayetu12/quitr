@@ -707,6 +707,24 @@
         .toLowerCase();
     }
 
+    function getMagicLinkRedirectUrl() {
+      try {
+        const current = new URL(window.location.href);
+        const host = current.hostname.toLowerCase();
+        const isLocalHost = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
+
+        if (isLocalHost) {
+          return null;
+        }
+
+        current.search = '';
+        current.hash = '';
+        return current.toString();
+      } catch (_e) {
+        return null;
+      }
+    }
+
     function setAuthUI() {
       const gate = document.getElementById('auth-gate');
       const emailEl = document.getElementById('auth-user-email');
@@ -856,12 +874,18 @@
         return;
       }
 
+      const redirectUrl = getMagicLinkRedirectUrl();
+      if (!redirectUrl) {
+        setAuthMessage('Magic link needs a public app URL. Open the deployed app (not localhost) and try again.', true);
+        return;
+      }
+
       setAuthMessage('Sending login link...');
       const { error } = await supabaseClient.auth.signInWithOtp({
         email,
         options: {
           shouldCreateUser: false,
-          emailRedirectTo: window.location.href
+          emailRedirectTo: redirectUrl
         }
       });
 
