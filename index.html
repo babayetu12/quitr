@@ -95,6 +95,43 @@
       background: linear-gradient(135deg, rgba(26, 26, 46, 0.8) 0%, rgba(22, 22, 22, 0.9) 100%);
       border: 1px solid rgba(255, 255, 255, 0.06);
     }
+
+    .action-tile {
+      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: linear-gradient(155deg, rgba(26, 26, 46, 0.88) 0%, rgba(13, 13, 13, 0.9) 100%);
+      overflow: hidden;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .action-tile::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.06) 45%, transparent 70%);
+      transform: translateX(-130%);
+      transition: transform 0.35s ease;
+      pointer-events: none;
+    }
+    .action-tile:hover {
+      transform: translateY(-2px);
+      border-color: rgba(0, 245, 212, 0.28);
+    }
+    .action-tile:hover::after {
+      transform: translateX(130%);
+    }
+
+    .milestone-row {
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .milestone-row.unlocked {
+      border-color: rgba(0, 245, 212, 0.28);
+      background: rgba(0, 245, 212, 0.07);
+    }
+    .milestone-row.next {
+      border-color: rgba(255, 159, 28, 0.32);
+      background: rgba(255, 159, 28, 0.08);
+    }
     
     .nav-item {
       position: relative;
@@ -294,32 +331,50 @@
 
         <!-- Quick Actions Grid -->
         <section class="mb-6">
-          <h3 class="font-syne text-lg font-bold mb-4 text-warm-amber">Quick Actions</h3>
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <button onclick="openUrgeModal()" class="glass-light rounded-xl p-4 text-left hover:border-warm-amber/50 transition-all group">
-              <div class="text-2xl mb-1">🔥</div>
-              <div class="font-bold text-white group-hover:text-warm-amber transition-colors">Rate desire</div>
-              <div class="text-gray-600 text-xs">How strong is the pull?</div>
+          <div class="flex items-end justify-between mb-4">
+            <h3 class="font-syne text-lg font-bold text-warm-amber">Action deck</h3>
+            <p class="text-gray-600 text-xs uppercase tracking-[0.2em]">Tap + execute</p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <button onclick="openUrgeModal()" class="action-tile rounded-2xl p-5 text-left">
+              <div class="flex items-start justify-between mb-3">
+                <span class="text-2xl">🔥</span>
+                <span class="text-[11px] text-warm-amber uppercase tracking-[0.2em]">Urgency</span>
+              </div>
+              <div class="font-syne text-lg text-white">Rate desire</div>
+              <div class="text-gray-500 text-sm mt-1">Log intensity before it escalates.</div>
             </button>
-            <button onclick="showMotivational()" class="glass-light rounded-xl p-4 text-left hover:border-electric-cyan/50 transition-all group">
-              <div class="text-2xl mb-1">💪</div>
-              <div class="font-bold text-white group-hover:text-electric-cyan transition-colors">Motivation</div>
-              <div class="text-gray-600 text-xs">Get inspired</div>
+            <button onclick="showMotivational()" class="action-tile rounded-2xl p-5 text-left">
+              <div class="flex items-start justify-between mb-3">
+                <span class="text-2xl">💪</span>
+                <span class="text-[11px] text-electric-cyan uppercase tracking-[0.2em]">Recovery</span>
+              </div>
+              <div class="font-syne text-lg text-white">Motivation burst</div>
+              <div class="text-gray-500 text-sm mt-1">Pull a custom reason or quote instantly.</div>
             </button>
-            <button onclick="logNatural()" class="glass-light rounded-xl p-4 text-left hover:border-green-500/50 transition-all group">
-              <div class="text-2xl mb-1">🌱</div>
-              <div class="font-bold text-white group-hover:text-green-400 transition-colors">Natural</div>
-              <div class="text-gray-600 text-xs">Healthy solo</div>
+            <button onclick="openReasonModal()" class="action-tile rounded-2xl p-5 text-left">
+              <div class="flex items-start justify-between mb-3">
+                <span class="text-2xl">💭</span>
+                <span class="text-[11px] text-soft-rose uppercase tracking-[0.2em]">Identity</span>
+              </div>
+              <div class="font-syne text-lg text-white">Add reason</div>
+              <div class="text-gray-500 text-sm mt-1">Capture why this version of you keeps going.</div>
             </button>
-            <button onclick="openReasonModal()" class="glass-light rounded-xl p-4 text-left hover:border-soft-rose/50 transition-all group">
-              <div class="text-2xl mb-1">💭</div>
-              <div class="font-bold text-white group-hover:text-soft-rose transition-colors">Add reason</div>
-              <div class="text-gray-600 text-xs">Why you quit</div>
+            <button onclick="logNatural()" class="action-tile rounded-2xl p-5 text-left">
+              <div class="flex items-start justify-between mb-3">
+                <span class="text-2xl">🌱</span>
+                <span class="text-[11px] text-green-400 uppercase tracking-[0.2em]">Balance</span>
+              </div>
+              <div class="font-syne text-lg text-white">Log natural</div>
+              <div class="text-gray-500 text-sm mt-1">Track healthy release without spiral.</div>
             </button>
-            <button onclick="showMilestones()" class="glass-light rounded-xl p-4 text-left hover:border-purple-500/50 transition-all group">
-              <div class="text-2xl mb-1">🏆</div>
-              <div class="font-bold text-white group-hover:text-purple-400 transition-colors">Milestones</div>
-              <div class="text-gray-600 text-xs">View achievements</div>
+            <button onclick="showMilestones()" class="action-tile rounded-2xl p-5 text-left md:col-span-2">
+              <div class="flex items-start justify-between mb-3">
+                <span class="text-2xl">🏆</span>
+                <span class="text-[11px] text-purple-400 uppercase tracking-[0.2em]">Progression</span>
+              </div>
+              <div class="font-syne text-lg text-white">Milestone command center</div>
+              <div class="text-gray-500 text-sm mt-1">Open your full ladder, status, and ETA across every checkpoint.</div>
             </button>
           </div>
         </section>
@@ -609,6 +664,38 @@
       <div class="flex justify-end gap-3 mt-6">
         <button onclick="closeReasonModal()" class="text-gray-500 hover:text-white">Cancel</button>
         <button onclick="saveReason()" class="bg-soft-rose text-off-white font-bold px-6 py-2 rounded-lg hover:bg-soft-rose/80 transition-colors">Save reason</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="milestone-modal" class="fixed inset-0 bg-black/85 z-50 hidden items-center justify-center p-4">
+    <div class="glass rounded-3xl p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto">
+      <div class="flex items-start justify-between mb-5">
+        <div>
+          <p class="text-xs uppercase tracking-[0.35em] text-gray-500 mb-2">Milestone command center</p>
+          <h3 class="font-syne text-2xl font-bold text-electric-cyan">Your recovery ladder</h3>
+          <p id="milestone-summary-copy" class="text-gray-400 text-sm mt-2">Start your timer to activate milestone tracking.</p>
+        </div>
+        <button onclick="closeMilestonesModal()" class="text-gray-500 hover:text-white text-2xl leading-none">&times;</button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+        <div class="rounded-xl border border-white/5 bg-black/20 p-4">
+          <div class="text-[11px] uppercase tracking-[0.2em] text-gray-500 mb-1">Current clean time</div>
+          <div id="milestone-current-time" class="font-mono text-xl text-off-white">0m</div>
+        </div>
+        <div class="rounded-xl border border-white/5 bg-black/20 p-4">
+          <div class="text-[11px] uppercase tracking-[0.2em] text-gray-500 mb-1">Unlocked</div>
+          <div id="milestone-unlocked-count" class="font-mono text-xl text-electric-cyan">0</div>
+        </div>
+        <div class="rounded-xl border border-white/5 bg-black/20 p-4">
+          <div class="text-[11px] uppercase tracking-[0.2em] text-gray-500 mb-1">Next ETA</div>
+          <div id="milestone-next-eta" class="font-mono text-xl text-warm-amber">--</div>
+        </div>
+      </div>
+
+      <div id="milestone-list" class="space-y-3">
+        <div class="text-gray-500 text-sm">No milestone data yet.</div>
       </div>
     </div>
   </div>
@@ -1171,6 +1258,21 @@
           }
         });
       }
+
+      const milestoneModal = document.getElementById('milestone-modal');
+      if (milestoneModal) {
+        milestoneModal.addEventListener('click', (event) => {
+          if (event.target === milestoneModal) {
+            closeMilestonesModal();
+          }
+        });
+      }
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          closeMilestonesModal();
+        }
+      });
     }
 
     // === NAVIGATION ===
@@ -1271,10 +1373,14 @@
       document.getElementById('main-time').textContent = `${h}:${m}:${s}`;
 
       updateTrackerDashboard();
+      const milestoneModal = document.getElementById('milestone-modal');
+      if (milestoneModal && !milestoneModal.classList.contains('hidden')) {
+        renderMilestonesModal();
+      }
     }
 
     function getNextMilestone(currentHours) {
-      const milestones = [1, 24, 72, 168, 336, 720];
+      const milestones = getMilestoneDefinitions().map(m => m.hours);
       for (const m of milestones) {
         if (currentHours < m) return m;
       }
@@ -1878,25 +1984,112 @@
     }
 
     // === MILESTONES ===
-    function showMilestones() {
-      const milestones = [
-        { hours: 1, title: '1 Hour', desc: 'You made it through the first hour!' },
-        { hours: 24, title: '24 Hours', desc: 'A full day. Sleep well tonight.' },
-        { hours: 72, title: '72 Hours', desc: 'The hardest part is over.' },
-        { hours: 168, title: '1 Week', desc: 'You\'re stronger than you were.' },
-        { hours: 336, title: '2 Weeks', desc: 'Two weeks of freedom.' },
-        { hours: 720, title: '1 Month', desc: 'A month of new life.' }
+    function getMilestoneDefinitions() {
+      return [
+        { hours: 1, title: 'First Hour', desc: 'Breaking the first impulse loop.' },
+        { hours: 6, title: '6 Hours', desc: 'Building early control under pressure.' },
+        { hours: 12, title: '12 Hours', desc: 'Half-day clean with intent.' },
+        { hours: 24, title: '1 Day', desc: 'One full day of self-respect in action.' },
+        { hours: 72, title: '3 Days', desc: 'Urge waves start losing power.' },
+        { hours: 168, title: '1 Week', desc: 'Your system is working.' },
+        { hours: 336, title: '2 Weeks', desc: 'Consistency is turning into identity.' },
+        { hours: 720, title: '1 Month', desc: 'A month of clean momentum.' },
+        { hours: 2160, title: '3 Months', desc: 'Recovery is now your baseline.' },
+        { hours: 4320, title: '6 Months', desc: 'Deep rebuild territory.' }
       ];
+    }
 
-      const elapsed = state.startTime ? (Date.now() - state.startTime) / (1000 * 60 * 60) : 0;
-      let next = milestones.find(m => m.hours > elapsed);
-      
-      if (next) {
-        const remaining = next.hours - elapsed;
-        showToast(`${next.title} in ${remaining.toFixed(1)} hours`);
+    function openMilestonesModal() {
+      const modal = document.getElementById('milestone-modal');
+      if (!modal) return;
+      renderMilestonesModal();
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeMilestonesModal() {
+      const modal = document.getElementById('milestone-modal');
+      if (!modal) return;
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function renderMilestonesModal() {
+      const listEl = document.getElementById('milestone-list');
+      const summaryEl = document.getElementById('milestone-summary-copy');
+      const currentEl = document.getElementById('milestone-current-time');
+      const unlockedEl = document.getElementById('milestone-unlocked-count');
+      const etaEl = document.getElementById('milestone-next-eta');
+
+      if (!listEl || !summaryEl || !currentEl || !unlockedEl || !etaEl) return;
+
+      const milestones = getMilestoneDefinitions();
+      const elapsedHours = state.startTime ? (Date.now() - state.startTime) / (1000 * 60 * 60) : 0;
+      const unlockedCount = milestones.filter(m => elapsedHours >= m.hours).length;
+      const nextMilestone = milestones.find(m => elapsedHours < m.hours) || null;
+
+      currentEl.textContent = state.startTime ? formatDuration(Date.now() - state.startTime) : '0m';
+      unlockedEl.textContent = `${unlockedCount}/${milestones.length}`;
+      etaEl.textContent = nextMilestone
+        ? `${Math.max(0, nextMilestone.hours - elapsedHours).toFixed(1)}h`
+        : 'Completed';
+
+      if (!state.startTime) {
+        summaryEl.textContent = 'Start your timer to unlock the milestone ladder.';
+      } else if (nextMilestone) {
+        summaryEl.textContent = `Next target: ${nextMilestone.title} in ${Math.max(0, nextMilestone.hours - elapsedHours).toFixed(1)} hours.`;
       } else {
-        showToast('Keep going! You\'re amazing.');
+        summaryEl.textContent = 'You cleared the full ladder. Keep building depth.';
       }
+
+      const nextIndex = milestones.findIndex(m => elapsedHours < m.hours);
+      listEl.innerHTML = milestones.map((milestone, index) => {
+        const previousHours = index === 0 ? 0 : milestones[index - 1].hours;
+        const reached = elapsedHours >= milestone.hours;
+        const isNext = !reached && index === nextIndex;
+        const progress = reached
+          ? 100
+          : elapsedHours <= previousHours
+            ? 0
+            : Math.min(100, ((elapsedHours - previousHours) / (milestone.hours - previousHours)) * 100);
+        const remainingHours = Math.max(0, milestone.hours - elapsedHours);
+
+        const statusLabel = reached ? 'Unlocked' : isNext ? 'Next' : 'Locked';
+        const statusClass = reached
+          ? 'text-electric-cyan bg-electric-cyan/15'
+          : isNext
+            ? 'text-warm-amber bg-warm-amber/15'
+            : 'text-gray-500 bg-white/5';
+        const rowClass = reached ? 'milestone-row unlocked' : isNext ? 'milestone-row next' : 'milestone-row';
+        const etaCopy = reached
+          ? 'Checkpoint reached'
+          : state.startTime
+            ? `${remainingHours.toFixed(1)}h remaining`
+            : 'Start tracking to activate';
+
+        return `
+          <div class="${rowClass} rounded-xl p-4">
+            <div class="flex items-start justify-between gap-3 mb-3">
+              <div>
+                <div class="font-syne text-lg text-off-white">${milestone.title}</div>
+                <div class="text-gray-500 text-sm mt-1">${milestone.desc}</div>
+              </div>
+              <span class="px-2 py-1 rounded-full text-[11px] uppercase tracking-[0.2em] ${statusClass}">${statusLabel}</span>
+            </div>
+            <div class="h-1.5 bg-carbon rounded-full overflow-hidden mb-2">
+              <div class="h-full bg-gradient-to-r from-electric-cyan to-warm-amber rounded-full" style="width: ${progress.toFixed(1)}%"></div>
+            </div>
+            <div class="flex items-center justify-between text-xs text-gray-500">
+              <span>${milestone.hours}h target</span>
+              <span>${etaCopy}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function showMilestones() {
+      openMilestonesModal();
     }
 
     // === ACTIVITY LIST ===
