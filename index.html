@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -166,14 +167,43 @@
   </style>
 </head>
 <body class="min-h-screen text-off-white">
+
+  <div id="auth-gate" class="fixed inset-0 z-[60] hidden bg-deep-charcoal/95 backdrop-blur-md">
+    <div class="min-h-screen flex items-center justify-center p-4">
+      <div class="glass rounded-2xl p-6 w-full max-w-md">
+        <p class="text-xs uppercase tracking-[0.35em] text-gray-500 mb-2">Private sync</p>
+        <h2 class="font-syne text-2xl font-bold text-electric-cyan">Secure your data</h2>
+        <p class="text-gray-400 text-sm mt-2">Sign in with your email to lock cloud data to your account only.</p>
+
+        <div class="mt-5 space-y-3">
+          <input id="auth-email" type="email" placeholder="you@example.com" class="w-full bg-carbon border border-electric-cyan/30 rounded-lg p-3 text-off-white placeholder-gray-600 focus:outline-none focus:border-electric-cyan">
+          <input id="auth-password" type="password" placeholder="Password" class="w-full bg-carbon border border-electric-cyan/30 rounded-lg p-3 text-off-white placeholder-gray-600 focus:outline-none focus:border-electric-cyan">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mt-4">
+          <button id="auth-signin-btn" class="bg-electric-cyan text-deep-charcoal font-bold py-3 rounded-lg hover:opacity-90 transition-opacity">Sign in</button>
+          <button id="auth-signup-btn" class="bg-midnight border border-white/10 text-off-white font-bold py-3 rounded-lg hover:border-electric-cyan/40 transition-colors">Create account</button>
+        </div>
+
+        <p id="auth-message" class="text-xs text-gray-500 mt-3 min-h-[16px]"></p>
+        <p class="text-xs text-gray-600 mt-2">Use the same account on iPhone and Mac to sync only your data.</p>
+      </div>
+    </div>
+  </div>
   
   <!-- Navigation -->
   <nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-white/5">
     <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
       <div class="font-syne text-2xl font-bold text-electric-cyan">QUITR</div>
-      <div class="flex gap-6">
-        <button class="nav-item active text-gray-400 hover:text-white transition-colors font-medium" onclick="showPage('tracker')">Tracker</button>
-        <button class="nav-item text-gray-400 hover:text-white transition-colors font-medium" onclick="showPage('analytics')">Analytics</button>
+      <div class="flex items-center gap-6">
+        <div class="flex gap-6">
+          <button class="nav-item active text-gray-400 hover:text-white transition-colors font-medium" onclick="showPage('tracker')">Tracker</button>
+          <button class="nav-item text-gray-400 hover:text-white transition-colors font-medium" onclick="showPage('analytics')">Analytics</button>
+        </div>
+        <div class="hidden md:flex items-center gap-3">
+          <span id="auth-user-email" class="hidden text-xs text-gray-500"></span>
+          <button id="auth-signout-btn" class="hidden text-xs uppercase tracking-[0.2em] text-gray-500 hover:text-soft-rose transition-colors">Sign out</button>
+        </div>
       </div>
     </div>
   </nav>
@@ -529,7 +559,7 @@
             <button onclick="syncNow()" class="flex-1 min-w-[140px] glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors text-electric-cyan">
               Sync Now
             </button>
-            <button onclick="syncToSupabase('manual'); showToast('Uploading...')" class="flex-1 min-w-[140px] glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors text-warm-amber">
+            <button onclick="syncToSupabase('manual')" class="flex-1 min-w-[140px] glass rounded-lg py-3 text-center hover:border-electric-cyan/50 transition-colors text-warm-amber">
               Push Data
             </button>
           </div>
@@ -594,11 +624,13 @@
 
     // === STATE MANAGEMENT ===
     const STORAGE_KEY = 'quitr-data';
-    const SYNC_RECORD_ID = 'quitr-global';
-    
-    // All devices intentionally use the same shared sync record.
-    function getDeviceId() {
-      return SYNC_RECORD_ID;
+    const AUTH_EMAIL_KEY = 'quitr-auth-email';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let currentUser = null;
+    let authReady = false;
+
+    function getRecordOwnerId() {
+      return currentUser ? currentUser.id : null;
     }
     
     let state = {
@@ -623,16 +655,17 @@
     let pendingSyncTimer = null;
 
     // === INITIALIZATION ===
-    function init() {
+    async function init() {
       loadState();
-      // Try to sync from Supabase on startup
-      loadFromSupabaseOnInit().then(() => {
-        setupEventListeners();
-        updateUI();
-        if (state.startTime) startCounter();
-        renderActivityList();
-        renderAnalytics();
-      });
+      setupEventListeners();
+      await bootstrapAuth();
+      if (currentUser) {
+        await loadFromSupabaseOnInit();
+      }
+      updateUI();
+      if (state.startTime) startCounter();
+      renderActivityList();
+      renderAnalytics();
     }
 
     function loadState() {
@@ -648,49 +681,166 @@
       }
     }
 
+    function setAuthMessage(message, isError = false) {
+      const el = document.getElementById('auth-message');
+      if (!el) return;
+      el.textContent = message || '';
+      el.classList.toggle('text-soft-rose', isError);
+      el.classList.toggle('text-gray-500', !isError);
+    }
+
+    function setAuthUI() {
+      const gate = document.getElementById('auth-gate');
+      const emailEl = document.getElementById('auth-user-email');
+      const signOutBtn = document.getElementById('auth-signout-btn');
+      const inputEmail = document.getElementById('auth-email');
+
+      if (!gate || !emailEl || !signOutBtn || !inputEmail) return;
+
+      if (currentUser) {
+        gate.classList.add('hidden');
+        emailEl.textContent = currentUser.email || 'Signed in';
+        emailEl.classList.remove('hidden');
+        signOutBtn.classList.remove('hidden');
+      } else {
+        gate.classList.remove('hidden');
+        emailEl.classList.add('hidden');
+        signOutBtn.classList.add('hidden');
+        inputEmail.value = localStorage.getItem(AUTH_EMAIL_KEY) || '';
+      }
+    }
+
+    async function bootstrapAuth() {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('[AUTH] Session check failed:', error.message);
+        }
+        currentUser = data?.session?.user || null;
+        setAuthUI();
+      } catch (e) {
+        console.error('[AUTH] Bootstrap failed:', e);
+      }
+
+      supabase.auth.onAuthStateChange(async (_event, session) => {
+        const previousUserId = currentUser?.id;
+        currentUser = session?.user || null;
+        if (currentUser?.email) {
+          localStorage.setItem(AUTH_EMAIL_KEY, currentUser.email);
+        }
+        setAuthUI();
+
+        if (authReady && currentUser && currentUser.id !== previousUserId) {
+          await loadFromSupabaseOnInit();
+          updateUI();
+          renderActivityList();
+          renderAnalytics();
+          if (state.startTime) startCounter();
+        }
+      });
+
+      authReady = true;
+    }
+
+    async function signInWithEmailPassword() {
+      const email = (document.getElementById('auth-email')?.value || '').trim();
+      const password = (document.getElementById('auth-password')?.value || '').trim();
+
+      if (!email || !password) {
+        setAuthMessage('Enter both email and password', true);
+        return;
+      }
+
+      setAuthMessage('Signing in...');
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        setAuthMessage(error.message, true);
+        return;
+      }
+
+      localStorage.setItem(AUTH_EMAIL_KEY, email);
+      setAuthMessage('Signed in');
+      showToast('Signed in. Secure sync enabled.');
+    }
+
+    async function signUpWithEmailPassword() {
+      const email = (document.getElementById('auth-email')?.value || '').trim();
+      const password = (document.getElementById('auth-password')?.value || '').trim();
+
+      if (!email || !password) {
+        setAuthMessage('Enter both email and password', true);
+        return;
+      }
+      if (password.length < 8) {
+        setAuthMessage('Use at least 8 characters for password', true);
+        return;
+      }
+
+      setAuthMessage('Creating account...');
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) {
+        setAuthMessage(error.message, true);
+        return;
+      }
+
+      localStorage.setItem(AUTH_EMAIL_KEY, email);
+      if (data?.session) {
+        setAuthMessage('Account created and signed in');
+        showToast('Account created. Secure sync enabled.');
+      } else {
+        setAuthMessage('Account created. Confirm email if your project requires it.', false);
+      }
+    }
+
+    async function signOutUser() {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        showToast('Sign out failed: ' + error.message);
+        return;
+      }
+      showToast('Signed out. Cloud sync locked.');
+    }
+
     async function loadFromSupabaseOnInit() {
       try {
-        const deviceId = getDeviceId();
-        console.log('[INIT] Checking cloud state for device', deviceId);
-        const response = await fetch(
-          `${SUPABASE_URL}/rest/v1/tracker?select=*&device_id=eq.${deviceId}&order=created_at.desc&limit=1`,
-          {
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Authorization': 'Bearer ' + SUPABASE_KEY
-            }
-          }
-        );
+        const ownerId = getRecordOwnerId();
+        if (!ownerId) {
+          console.log('[INIT] No authenticated user; skipping cloud load');
+          return;
+        }
 
-        console.log('[INIT] Response status:', response.status);
+        console.log('[INIT] Checking cloud state for user', ownerId);
+        const { data, error } = await supabase
+          .from('tracker')
+          .select('*')
+          .eq('device_id', ownerId)
+          .order('created_at', { ascending: false })
+          .limit(1);
 
-        if (response.ok) {
-          const data = await response.json();
-          console.log('[INIT] Records found:', data.length);
-          if (data && data.length > 0) {
-            const remote = data[0];
-            const localLastModified = state.lastModified || 0;
-            const remoteLastModified = new Date(remote.updated_at).getTime();
-            console.log('[INIT] Comparing local vs remote', { localLastModified, remoteLastModified });
+        if (error) {
+          console.error('[INIT] Cloud check failed:', error.message);
+          return;
+        }
 
-            // Use remote if it's newer (server has more recent data)
-            if (remoteLastModified > localLastModified && remote.state_data) {
-              try {
-                const remoteState = JSON.parse(remote.state_data);
-                state = { ...state, ...remoteState };
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-                console.log('[INIT] Loaded remote state from Supabase');
-              } catch (e) {
-                console.error('[INIT] Failed to parse remote state:', e);
-              }
-            } else {
-              console.log('[INIT] Keeping local state');
+        console.log('[INIT] Records found:', data.length);
+        if (data && data.length > 0) {
+          const remote = data[0];
+          const localLastModified = state.lastModified || 0;
+          const remoteLastModified = new Date(remote.updated_at).getTime();
+          console.log('[INIT] Comparing local vs remote', { localLastModified, remoteLastModified });
+
+          if (remoteLastModified > localLastModified && remote.state_data) {
+            try {
+              const remoteState = JSON.parse(remote.state_data);
+              state = { ...state, ...remoteState };
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+              console.log('[INIT] Loaded remote state from Supabase');
+            } catch (e) {
+              console.error('[INIT] Failed to parse remote state:', e);
             }
           } else {
-            console.log('[INIT] No remote rows for this device yet');
+            console.log('[INIT] Keeping local state');
           }
-        } else {
-          console.error('[INIT] Cloud check failed:', await response.text());
         }
       } catch (e) {
         console.error('[INIT] Failed to load from Supabase on init:', e);
@@ -725,14 +875,24 @@
         console.log('[SYNC] Already in progress, skipping', reason);
         return;
       }
+
+      const ownerId = getRecordOwnerId();
+      if (!ownerId) {
+        if (reason === 'manual') {
+          showToast('Sign in to sync with cloud');
+        }
+        return;
+      }
       
       try {
         syncInProgress = true;
-        const deviceId = getDeviceId();
-        console.log('[SYNC] Starting', reason, 'sync for device', deviceId);
+        console.log('[SYNC] Starting', reason, 'sync for user', ownerId);
+        if (reason === 'manual') {
+          showToast('Uploading...');
+        }
         
         const payload = {
-          device_id: deviceId,
+          device_id: ownerId,
           state_data: JSON.stringify(state),
           start_time: state.startTime,
           updated_at: new Date().toISOString()
@@ -745,91 +905,78 @@
           journals: state.journals.length,
           reason
         });
-        
-        // Check if we already have a record for this device
-        const checkResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/tracker?device_id=eq.${deviceId}&select=id`,
-          {
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Authorization': 'Bearer ' + SUPABASE_KEY
-            }
+
+        const { data: existing, error: checkError } = await supabase
+          .from('tracker')
+          .select('id')
+          .eq('device_id', ownerId)
+          .limit(1);
+
+        if (checkError) {
+          console.error('[SYNC] Check failed:', checkError.message);
+          if (reason === 'manual') {
+            showToast('Cloud check failed: ' + checkError.message);
           }
-        );
-        
-        if (checkResponse.ok) {
-          const existing = await checkResponse.json();
-          console.log('[SYNC] Existing record count:', existing.length);
-          
-          if (existing && existing.length > 0) {
-            // Update existing record
-            const recordId = existing[0].id;
-            const updateResponse = await fetch(
-              `${SUPABASE_URL}/rest/v1/tracker?id=eq.${recordId}`,
-              {
-                method: 'PATCH',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'apikey': SUPABASE_KEY,
-                  'Authorization': 'Bearer ' + SUPABASE_KEY,
-                  'Prefer': 'return=minimal'
-                },
-                body: JSON.stringify(payload)
-              }
-            );
-            console.log('[SYNC] PATCH status:', updateResponse.status);
-            if (!updateResponse.ok) {
-              console.error('[SYNC] PATCH failed:', await updateResponse.text());
+          return;
+        }
+
+        console.log('[SYNC] Existing record count:', existing.length);
+
+        if (existing && existing.length > 0) {
+          const recordId = existing[0].id;
+          const { error: updateError } = await supabase
+            .from('tracker')
+            .update(payload)
+            .eq('id', recordId);
+
+          if (updateError) {
+            console.error('[SYNC] Update failed:', updateError.message);
+            if (reason === 'manual') {
+              showToast('Upload failed: ' + updateError.message);
             }
-          } else {
-            // Insert new record
-            const insertResponse = await fetch(
-              `${SUPABASE_URL}/rest/v1/tracker`,
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'apikey': SUPABASE_KEY,
-                  'Authorization': 'Bearer ' + SUPABASE_KEY,
-                  'Prefer': 'return=minimal'
-                },
-                body: JSON.stringify(payload)
-              }
-            );
-            console.log('[SYNC] POST status:', insertResponse.status);
-            if (!insertResponse.ok) {
-              console.error('[SYNC] POST failed:', await insertResponse.text());
-            }
+          } else if (reason === 'manual') {
+            showToast('Uploaded securely');
           }
         } else {
-          console.error('[SYNC] Check failed:', checkResponse.status, await checkResponse.text());
+          const { error: insertError } = await supabase
+            .from('tracker')
+            .insert(payload);
+
+          if (insertError) {
+            console.error('[SYNC] Insert failed:', insertError.message);
+            if (reason === 'manual') {
+              showToast('Upload failed: ' + insertError.message);
+            }
+          } else if (reason === 'manual') {
+            showToast('Uploaded securely');
+          }
         }
       } catch (e) {
         console.error('[SYNC] Failed:', e);
+        if (reason === 'manual') {
+          showToast('Upload failed: ' + e.message);
+        }
       } finally {
         syncInProgress = false;
       }
     }
 
     async function fetchRemoteRecord() {
-      const deviceId = getDeviceId();
-      const response = await fetch(
-        `${SUPABASE_URL}/rest/v1/tracker?select=*&device_id=eq.${deviceId}&limit=1`,
-        {
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': 'Bearer ' + SUPABASE_KEY
-          }
-        }
-      );
-
-      console.log('[REMOTE] Fetch status:', response.status);
-
-      if (!response.ok) {
-        throw new Error(`Remote fetch failed: ${response.status} ${await response.text()}`);
+      const ownerId = getRecordOwnerId();
+      if (!ownerId) {
+        throw new Error('Sign in required');
       }
 
-      const data = await response.json();
+      const { data, error } = await supabase
+        .from('tracker')
+        .select('*')
+        .eq('device_id', ownerId)
+        .limit(1);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
       console.log('[REMOTE] Rows returned:', data.length);
       return data && data.length > 0 ? data[0] : null;
     }
@@ -853,7 +1000,13 @@
 
     async function loadFromSupabase() {
       try {
-        console.log('[PULL] Starting pull for device', getDeviceId());
+        const ownerId = getRecordOwnerId();
+        if (!ownerId) {
+          showToast('Sign in to sync with cloud');
+          return;
+        }
+
+        console.log('[PULL] Starting pull for user', ownerId);
         showToast('Syncing from cloud...');
         const remote = await fetchRemoteRecord();
 
@@ -868,7 +1021,7 @@
           }
         } else {
           console.log('[PULL] No remote state_data available');
-          showToast('No cloud data found for this device');
+          showToast('No cloud data found for this account');
         }
       } catch (e) {
         console.error('[PULL] Failed to load from Supabase:', e);
@@ -893,6 +1046,18 @@
       document.getElementById('log-relapse-btn').addEventListener('click', logRelapse);
       document.getElementById('reset-btn').addEventListener('click', resetAll);
       document.getElementById('import-file').addEventListener('change', handleImport);
+      document.getElementById('auth-signin-btn').addEventListener('click', signInWithEmailPassword);
+      document.getElementById('auth-signup-btn').addEventListener('click', signUpWithEmailPassword);
+      document.getElementById('auth-signout-btn').addEventListener('click', signOutUser);
+
+      const authPasswordInput = document.getElementById('auth-password');
+      if (authPasswordInput) {
+        authPasswordInput.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter') {
+            signInWithEmailPassword();
+          }
+        });
+      }
     }
 
     // === NAVIGATION ===
