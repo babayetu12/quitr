@@ -176,14 +176,15 @@
         <p class="text-gray-400 text-sm mt-2">Sign in with your email to lock cloud data to your account only.</p>
 
         <div class="mt-5 space-y-3">
-          <input id="auth-email" type="email" placeholder="you@example.com" class="w-full bg-carbon border border-electric-cyan/30 rounded-lg p-3 text-off-white placeholder-gray-600 focus:outline-none focus:border-electric-cyan">
-          <input id="auth-password" type="password" placeholder="Password" class="w-full bg-carbon border border-electric-cyan/30 rounded-lg p-3 text-off-white placeholder-gray-600 focus:outline-none focus:border-electric-cyan">
+          <input id="auth-email" type="email" placeholder="you@example.com" autocomplete="email" autocapitalize="none" autocorrect="off" spellcheck="false" inputmode="email" class="w-full bg-carbon border border-electric-cyan/30 rounded-lg p-3 text-off-white placeholder-gray-600 focus:outline-none focus:border-electric-cyan">
+          <input id="auth-password" type="password" placeholder="Password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" class="w-full bg-carbon border border-electric-cyan/30 rounded-lg p-3 text-off-white placeholder-gray-600 focus:outline-none focus:border-electric-cyan">
         </div>
 
         <div class="grid grid-cols-2 gap-3 mt-4">
           <button id="auth-signin-btn" class="bg-electric-cyan text-deep-charcoal font-bold py-3 rounded-lg hover:opacity-90 transition-opacity">Sign in</button>
           <button id="auth-signup-btn" class="bg-midnight border border-white/10 text-off-white font-bold py-3 rounded-lg hover:border-electric-cyan/40 transition-colors">Create account</button>
         </div>
+        <button id="auth-link-btn" class="w-full mt-3 bg-midnight/60 border border-electric-cyan/20 text-electric-cyan font-semibold py-2 rounded-lg hover:border-electric-cyan/50 transition-colors">Send login link</button>
 
         <p id="auth-message" class="text-xs text-gray-500 mt-3 min-h-[16px]"></p>
         <p class="text-xs text-gray-600 mt-2">Use the same account on iPhone and Mac to sync only your data.</p>
@@ -699,6 +700,13 @@
       el.classList.toggle('text-gray-500', !isError);
     }
 
+    function normalizeAuthEmail(value) {
+      return String(value || '')
+        .replace(/\u00A0/g, ' ')
+        .trim()
+        .toLowerCase();
+    }
+
     function setAuthUI() {
       const gate = document.getElementById('auth-gate');
       const emailEl = document.getElementById('auth-user-email');
@@ -763,18 +771,37 @@
         return;
       }
 
-      const email = (document.getElementById('auth-email')?.value || '').trim();
-      const password = (document.getElementById('auth-password')?.value || '').trim();
+      const email = normalizeAuthEmail(document.getElementById('auth-email')?.value || '');
+      const passwordRaw = document.getElementById('auth-password')?.value || '';
 
-      if (!email || !password) {
+      if (!email || !passwordRaw) {
         setAuthMessage('Enter both email and password', true);
         return;
       }
 
       setAuthMessage('Signing in...');
-      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-      if (error) {
-        setAuthMessage(error.message, true);
+      let signInError = null;
+      const passwordCandidates = [passwordRaw];
+      if (passwordRaw.trim() !== passwordRaw) {
+        passwordCandidates.push(passwordRaw.trim());
+      }
+
+      for (const password of passwordCandidates) {
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (!error) {
+          signInError = null;
+          break;
+        }
+        signInError = error;
+      }
+
+      if (signInError) {
+        const lowerMsg = String(signInError.message || '').toLowerCase();
+        if (lowerMsg.includes('invalid login credentials')) {
+          setAuthMessage('Invalid login. On iPhone try the "Send login link" button below.', true);
+        } else {
+          setAuthMessage(signInError.message, true);
+        }
         return;
       }
 
@@ -789,8 +816,8 @@
         return;
       }
 
-      const email = (document.getElementById('auth-email')?.value || '').trim();
-      const password = (document.getElementById('auth-password')?.value || '').trim();
+      const email = normalizeAuthEmail(document.getElementById('auth-email')?.value || '');
+      const password = document.getElementById('auth-password')?.value || '';
 
       if (!email || !password) {
         setAuthMessage('Enter both email and password', true);
@@ -815,6 +842,37 @@
       } else {
         setAuthMessage('Account created. Confirm email if your project requires it.', false);
       }
+    }
+
+    async function sendLoginLink() {
+      if (!supabaseClient) {
+        setAuthMessage('Authentication unavailable. Reload the page.', true);
+        return;
+      }
+
+      const email = normalizeAuthEmail(document.getElementById('auth-email')?.value || '');
+      if (!email) {
+        setAuthMessage('Enter your email first', true);
+        return;
+      }
+
+      setAuthMessage('Sending login link...');
+      const { error } = await supabaseClient.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: false,
+          emailRedirectTo: window.location.href
+        }
+      });
+
+      if (error) {
+        setAuthMessage(error.message, true);
+        return;
+      }
+
+      localStorage.setItem(AUTH_EMAIL_KEY, email);
+      setAuthMessage('Login link sent. Open your email on this iPhone.');
+      showToast('Login link sent');
     }
 
     async function signOutUser() {
@@ -1078,6 +1136,7 @@
       document.getElementById('import-file').addEventListener('change', handleImport);
       document.getElementById('auth-signin-btn').addEventListener('click', signInWithEmailPassword);
       document.getElementById('auth-signup-btn').addEventListener('click', signUpWithEmailPassword);
+      document.getElementById('auth-link-btn').addEventListener('click', sendLoginLink);
       document.getElementById('auth-signout-btn').addEventListener('click', signOutUser);
 
       const authPasswordInput = document.getElementById('auth-password');
