@@ -237,6 +237,7 @@
         <div class="flex gap-6">
           <button class="nav-item active text-gray-400 hover:text-white transition-colors font-medium" onclick="showPage('tracker')">Tracker</button>
           <button class="nav-item text-gray-400 hover:text-white transition-colors font-medium" onclick="showPage('analytics')">Analytics</button>
+          <button class="nav-item text-gray-400 hover:text-white transition-colors font-medium" onclick="showPage('logs')">Logs</button>
         </div>
         <div class="hidden md:flex items-center gap-3">
           <span id="auth-user-email" class="hidden text-xs text-gray-500"></span>
@@ -563,6 +564,42 @@
           </div>
         </section>
 
+        <!-- Healthy Release Impact -->
+        <section class="mb-6">
+          <div class="glass rounded-2xl p-5">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="font-syne text-lg font-bold">Healthy release impact</h3>
+                <p class="text-gray-500 text-sm">What natural releases do to your urge pattern</p>
+              </div>
+              <div id="release-insights-count" class="text-xs uppercase tracking-[0.25em] text-gray-500">0 logs</div>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              <div class="stat-card rounded-xl p-4">
+                <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Urge reduction</div>
+                <div id="release-urge-reduction" class="font-mono text-2xl text-electric-cyan">0%</div>
+              </div>
+              <div class="stat-card rounded-xl p-4">
+                <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Intensity shift</div>
+                <div id="release-intensity-shift" class="font-mono text-2xl text-warm-amber">0.0</div>
+              </div>
+              <div class="stat-card rounded-xl p-4">
+                <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Avg. time to next urge</div>
+                <div id="release-next-urge" class="font-mono text-2xl text-soft-rose">--</div>
+              </div>
+              <div class="stat-card rounded-xl p-4">
+                <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Overall effect</div>
+                <div id="release-overall-effect" class="font-mono text-lg text-off-white">--</div>
+              </div>
+            </div>
+
+            <div id="release-insights-list" class="space-y-3">
+              <div class="text-gray-500 text-sm">Log a few healthy releases to unlock impact analysis.</div>
+            </div>
+          </div>
+        </section>
+
         <!-- Streak History -->
         <section class="mb-6">
           <div class="glass rounded-2xl p-5">
@@ -620,6 +657,73 @@
             </button>
           </div>
           <input type="file" id="import-file" class="hidden" accept=".json">
+        </section>
+
+      </div>
+    </div>
+
+    <!-- LOGS PAGE -->
+    <div id="page-logs" class="page">
+      <div class="max-w-2xl mx-auto px-4">
+
+        <!-- Logs Hero -->
+        <section class="mb-6">
+          <div class="glass rounded-3xl p-6 md:p-8 overflow-hidden relative">
+            <div class="absolute inset-0 bg-gradient-to-br from-warm-amber/10 via-transparent to-electric-cyan/10 pointer-events-none"></div>
+            <div class="relative">
+              <p class="text-xs uppercase tracking-[0.35em] text-gray-500 mb-3">Data management</p>
+              <h2 class="font-syne text-3xl md:text-4xl font-bold leading-tight">Your logs</h2>
+              <p class="text-gray-400 mt-3 max-w-2xl">Review, edit, and remove individual entries. Deletions sync across all your devices automatically.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Urges List -->
+        <section class="mb-6">
+          <div class="glass rounded-2xl p-5">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="font-syne text-lg font-bold">Urges</h3>
+                <p class="text-gray-500 text-sm">All logged desire entries</p>
+              </div>
+              <div id="logs-urge-count" class="text-xs uppercase tracking-[0.25em] text-gray-500">0 logs</div>
+            </div>
+            <div id="logs-urge-list" class="space-y-2 max-h-96 overflow-y-auto">
+              <div class="text-gray-600 text-sm text-center py-4">No urges logged yet</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Naturals List -->
+        <section class="mb-6">
+          <div class="glass rounded-2xl p-5">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="font-syne text-lg font-bold">Healthy releases</h3>
+                <p class="text-gray-500 text-sm">All natural release entries</p>
+              </div>
+              <div id="logs-natural-count" class="text-xs uppercase tracking-[0.25em] text-gray-500">0 logs</div>
+            </div>
+            <div id="logs-natural-list" class="space-y-2 max-h-96 overflow-y-auto">
+              <div class="text-gray-600 text-sm text-center py-4">No healthy releases logged yet</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Activity Feed (All) -->
+        <section class="mb-6">
+          <div class="glass rounded-2xl p-5">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="font-syne text-lg font-bold">Activity feed</h3>
+                <p class="text-gray-500 text-sm">Recent events across all categories</p>
+              </div>
+              <div id="logs-activity-count" class="text-xs uppercase tracking-[0.25em] text-gray-500">0 events</div>
+            </div>
+            <div id="logs-activity-list" class="space-y-2 max-h-96 overflow-y-auto">
+              <div class="text-gray-600 text-sm text-center py-4">No activity yet</div>
+            </div>
+          </div>
         </section>
 
       </div>
@@ -1279,12 +1383,15 @@
     function showPage(pageId) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      
+
       document.getElementById('page-' + pageId).classList.add('active');
       event.target.classList.add('active');
-      
+
       if (pageId === 'analytics') {
         renderAnalytics();
+      }
+      if (pageId === 'logs') {
+        renderLogsPage();
       }
     }
 
@@ -2106,16 +2213,161 @@
         return;
       }
 
-      container.innerHTML = state.milestones.slice(0, 10).map(a => {
+      container.innerHTML = state.milestones.slice(0, 10).map((a, index) => {
         const icon = a.category === 'start' ? '🏁' : a.category === 'relapse' ? '❌' : a.category === 'urge' ? '🚫' : a.category === 'natural' ? '🌱' : a.category === 'journal' ? '📝' : '⭐';
+        const canDelete = a.category !== 'start';
         return `
           <div class="flex items-center gap-3 text-sm py-2 border-b border-white/5">
             <span class="text-lg">${icon}</span>
             <span class="text-white flex-1">${a.type}</span>
             <span class="text-gray-600 text-xs">${formatDateDisplay(a.time)}</span>
+            ${canDelete ? `<button onclick="deleteActivityLog(${index})" class="text-gray-500 hover:text-soft-rose text-xs uppercase tracking-[0.2em] transition-colors">Delete</button>` : '<span class="text-gray-700 text-[11px] uppercase tracking-[0.2em]">Locked</span>'}
           </div>
         `;
       }).join('');
+    }
+
+    function deleteActivityLog(feedIndex) {
+      const entry = state.milestones[feedIndex];
+      if (!entry) return;
+      if (entry.category === 'start') {
+        showToast('Use Reset or Edit start time for journey start logs');
+        return;
+      }
+
+      const label = entry.category === 'natural' ? 'healthy release' : entry.category === 'urge' ? 'urge' : entry.category === 'relapse' ? 'relapse' : 'log';
+      if (!confirm(`Delete this ${label}? This cannot be undone.`)) return;
+
+      state.milestones.splice(feedIndex, 1);
+
+      const removeClosest = (collection, matcher) => {
+        const foundIndex = collection.findIndex(matcher);
+        if (foundIndex >= 0) collection.splice(foundIndex, 1);
+      };
+
+      if (entry.category === 'natural') {
+        removeClosest(state.naturals, item => Math.abs((item.time || 0) - entry.time) < 1000);
+      } else if (entry.category === 'urge') {
+        removeClosest(state.urges, item => Math.abs((item.time || 0) - entry.time) < 1000);
+      } else if (entry.category === 'relapse') {
+        removeClosest(state.relapses, item => Math.abs((item.time || 0) - entry.time) < 1000);
+      } else if (entry.category === 'journal') {
+        removeClosest(state.journals, item => Math.abs((item.time || 0) - entry.time) < 1000);
+      }
+
+      saveState();
+      renderActivityList();
+      renderAnalytics();
+      showToast('Log deleted');
+    }
+
+    function deleteUrge(index) {
+      const urges = Array.isArray(state.urges) ? state.urges : [];
+      const urge = urges[index];
+      if (!urge) return;
+
+      if (!confirm(`Delete urge (Level ${urge.level}) logged on ${formatDateDisplay(urge.time)}? This cannot be undone.`)) return;
+
+      state.urges.splice(index, 1);
+      state.milestones = state.milestones.filter(m => !(m.category === 'urge' && Math.abs((m.time || 0) - urge.time) < 1000));
+
+      saveState();
+      renderLogsPage();
+      renderActivityList();
+      updateTrackerDashboard();
+      showToast('Urge deleted');
+    }
+
+    function deleteNatural(index) {
+      const naturals = Array.isArray(state.naturals) ? state.naturals : [];
+      const natural = naturals[index];
+      if (!natural) return;
+
+      if (!confirm(`Delete healthy release logged on ${formatDateDisplay(natural.time)}? This cannot be undone.`)) return;
+
+      state.naturals.splice(index, 1);
+      state.milestones = state.milestones.filter(m => !(m.category === 'natural' && Math.abs((m.time || 0) - natural.time) < 1000));
+
+      saveState();
+      renderLogsPage();
+      renderActivityList();
+      updateTrackerDashboard();
+      showToast('Healthy release deleted');
+    }
+
+    function renderLogsPage() {
+      const urges = Array.isArray(state.urges) ? state.urges : [];
+      const naturals = Array.isArray(state.naturals) ? state.naturals : [];
+      const milestones = Array.isArray(state.milestones) ? state.milestones : [];
+
+      const urgeCountEl = document.getElementById('logs-urge-count');
+      const urgeListEl = document.getElementById('logs-urge-list');
+      const naturalCountEl = document.getElementById('logs-natural-count');
+      const naturalListEl = document.getElementById('logs-natural-list');
+      const activityCountEl = document.getElementById('logs-activity-count');
+      const activityListEl = document.getElementById('logs-activity-list');
+
+      if (urgeCountEl) urgeCountEl.textContent = `${urges.length} log${urges.length === 1 ? '' : 's'}`;
+      if (naturalCountEl) naturalCountEl.textContent = `${naturals.length} log${naturals.length === 1 ? '' : 's'}`;
+      if (activityCountEl) activityCountEl.textContent = `${milestones.length} event${milestones.length === 1 ? '' : 's'}`;
+
+      if (urgeListEl) {
+        if (urges.length === 0) {
+          urgeListEl.innerHTML = '<div class="text-gray-600 text-sm text-center py-4">No urges logged yet</div>';
+        } else {
+          const sorted = urges.slice().sort((a, b) => (b.time || 0) - (a.time || 0));
+          urgeListEl.innerHTML = sorted.map((u, i) => {
+            const originalIndex = urges.indexOf(u);
+            const intensityColor = u.level >= 7 ? 'text-soft-rose' : u.level >= 4 ? 'text-warm-amber' : 'text-electric-cyan';
+            return `
+              <div class="flex items-center gap-3 text-sm py-2 border-b border-white/5">
+                <span class="text-lg">🚫</span>
+                <span class="text-white flex-1">Level <span class="font-mono ${intensityColor}">${u.level}</span>/10</span>
+                <span class="text-gray-600 text-xs">${formatDateDisplay(u.time)}</span>
+                <button onclick="deleteUrge(${originalIndex})" class="text-gray-500 hover:text-soft-rose text-xs uppercase tracking-[0.2em] transition-colors">Delete</button>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      if (naturalListEl) {
+        if (naturals.length === 0) {
+          naturalListEl.innerHTML = '<div class="text-gray-600 text-sm text-center py-4">No healthy releases logged yet</div>';
+        } else {
+          const sorted = naturals.slice().sort((a, b) => (b.time || 0) - (a.time || 0));
+          naturalListEl.innerHTML = sorted.map((n, i) => {
+            const originalIndex = naturals.indexOf(n);
+            return `
+              <div class="flex items-center gap-3 text-sm py-2 border-b border-white/5">
+                <span class="text-lg">🌱</span>
+                <span class="text-white flex-1">Healthy release</span>
+                <span class="text-gray-600 text-xs">${formatDateDisplay(n.time)}</span>
+                <button onclick="deleteNatural(${originalIndex})" class="text-gray-500 hover:text-soft-rose text-xs uppercase tracking-[0.2em] transition-colors">Delete</button>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      if (activityListEl) {
+        if (milestones.length === 0) {
+          activityListEl.innerHTML = '<div class="text-gray-600 text-sm text-center py-4">No activity yet</div>';
+        } else {
+          activityListEl.innerHTML = milestones.map((a, index) => {
+            const icon = a.category === 'start' ? '🏁' : a.category === 'relapse' ? '❌' : a.category === 'urge' ? '🚫' : a.category === 'natural' ? '🌱' : a.category === 'journal' ? '📝' : '⭐';
+            const canDelete = a.category !== 'start';
+            return `
+              <div class="flex items-center gap-3 text-sm py-2 border-b border-white/5">
+                <span class="text-lg">${icon}</span>
+                <span class="text-white flex-1">${a.type}</span>
+                <span class="text-gray-600 text-xs">${formatDateDisplay(a.time)}</span>
+                ${canDelete ? `<button onclick="deleteActivityLog(${index})" class="text-gray-500 hover:text-soft-rose text-xs uppercase tracking-[0.2em] transition-colors">Delete</button>` : '<span class="text-gray-700 text-[11px] uppercase tracking-[0.2em]">Locked</span>'}
+              </div>
+            `;
+          }).join('');
+        }
+      }
     }
 
     // === ANALYTICS ===
@@ -2203,6 +2455,7 @@
       renderWeeklyChart();
       renderEventMixChart();
       renderUrgeInsights();
+      renderHealthyReleaseInsights();
       renderStreakHistory();
       renderAchievements();
     }
@@ -2327,6 +2580,132 @@
           <div class="text-off-white">${insights.recoveryWindowLabel}</div>
         </div>
         ${insights.coachTips.map(tip => `
+          <div class="rounded-xl border border-electric-cyan/15 bg-electric-cyan/5 p-4 text-sm text-off-white">${tip}</div>
+        `).join('')}
+      `;
+    }
+
+    function getHealthyReleaseInsights() {
+      const naturals = Array.isArray(state.naturals) ? state.naturals : [];
+      const urges = Array.isArray(state.urges) ? state.urges : [];
+
+      if (naturals.length === 0 || urges.length === 0) {
+        return {
+          count: naturals.length,
+          urgeReduction: 0,
+          intensityShift: 0,
+          nextUrgeHours: null,
+          overallEffect: 'Not enough release data yet',
+          highlight: 'Log a few healthy releases to see the pattern shift.',
+          tips: []
+        };
+      }
+
+      const windowHours = 24;
+      const windowMs = windowHours * 60 * 60 * 1000;
+      let beforeUrges = 0;
+      let afterUrges = 0;
+      let beforeIntensityTotal = 0;
+      let afterIntensityTotal = 0;
+      let beforeSamples = 0;
+      let afterSamples = 0;
+      const nextUrgeDurations = [];
+
+      const orderedNaturals = naturals
+        .filter(item => Number.isFinite(Number(item.time)))
+        .map(item => Number(item.time))
+        .sort((a, b) => a - b);
+
+      for (const releaseTime of orderedNaturals) {
+        const windowStart = releaseTime - windowMs;
+        const windowEnd = releaseTime + windowMs;
+
+        const beforeWindowUrges = urges.filter(urge => urge.time >= windowStart && urge.time < releaseTime);
+        const afterWindowUrges = urges.filter(urge => urge.time >= releaseTime && urge.time <= windowEnd);
+
+        beforeUrges += beforeWindowUrges.length;
+        afterUrges += afterWindowUrges.length;
+        beforeIntensityTotal += beforeWindowUrges.reduce((sum, urge) => sum + (Number(urge.level) || 0), 0);
+        afterIntensityTotal += afterWindowUrges.reduce((sum, urge) => sum + (Number(urge.level) || 0), 0);
+        beforeSamples += beforeWindowUrges.length;
+        afterSamples += afterWindowUrges.length;
+
+        const nextUrge = urges.find(urge => urge.time > releaseTime);
+        if (nextUrge) {
+          nextUrgeDurations.push((nextUrge.time - releaseTime) / (60 * 60 * 1000));
+        }
+      }
+
+      const avgBeforeIntensity = beforeSamples > 0 ? beforeIntensityTotal / beforeSamples : 0;
+      const avgAfterIntensity = afterSamples > 0 ? afterIntensityTotal / afterSamples : 0;
+      const urgeReduction = beforeUrges > 0 ? Math.max(-100, Math.min(100, ((beforeUrges - afterUrges) / beforeUrges) * 100)) : 0;
+      const intensityShift = avgBeforeIntensity - avgAfterIntensity;
+      const avgNextUrge = nextUrgeDurations.length > 0
+        ? nextUrgeDurations.reduce((sum, value) => sum + value, 0) / nextUrgeDurations.length
+        : null;
+
+      let overallEffect = 'Neutral so far';
+      if (urgeReduction >= 25 && intensityShift >= 0.5) {
+        overallEffect = 'Healthy releases are clearly calming the urge load';
+      } else if (urgeReduction >= 10 || intensityShift > 0) {
+        overallEffect = 'Healthy releases appear to soften the edge';
+      } else if (urgeReduction < 0 || intensityShift < -0.5) {
+        overallEffect = 'The pattern is noisy, but releases are not hurting you';
+      }
+
+      const highlight = avgNextUrge
+        ? `Average next urge arrives ${avgNextUrge.toFixed(1)}h after a healthy release.`
+        : 'No post-release urge timing yet. Keep logging for a clearer read.';
+
+      const tips = [];
+      tips.push(urgeReduction >= 0
+        ? 'Healthy releases are lowering urge volume in the surrounding day.'
+        : 'Your urge volume is not rising after healthy releases, which is a good sign.');
+      tips.push(intensityShift >= 0
+        ? 'Intensity also drops after release windows, so the urge spikes are getting softer.'
+        : 'Intensity is stable or mixed; the main benefit may be in keeping you from spiraling.');
+      tips.push(avgNextUrge && avgNextUrge >= 6
+        ? 'When urges return, they usually take hours, not minutes. That gives you space to reset.'
+        : 'The next-urge window is still unclear, so keep logging both urges and releases.');
+
+      return {
+        count: naturals.length,
+        urgeReduction,
+        intensityShift,
+        nextUrgeHours: avgNextUrge,
+        overallEffect,
+        highlight,
+        tips
+      };
+    }
+
+    function renderHealthyReleaseInsights() {
+      const countEl = document.getElementById('release-insights-count');
+      const urgeReductionEl = document.getElementById('release-urge-reduction');
+      const intensityShiftEl = document.getElementById('release-intensity-shift');
+      const nextUrgeEl = document.getElementById('release-next-urge');
+      const effectEl = document.getElementById('release-overall-effect');
+      const listEl = document.getElementById('release-insights-list');
+      if (!countEl || !urgeReductionEl || !intensityShiftEl || !nextUrgeEl || !effectEl || !listEl) return;
+
+      const insights = getHealthyReleaseInsights();
+      countEl.textContent = `${insights.count} log${insights.count === 1 ? '' : 's'}`;
+      urgeReductionEl.textContent = `${insights.urgeReduction.toFixed(0)}%`;
+      intensityShiftEl.textContent = insights.intensityShift.toFixed(1);
+      nextUrgeEl.textContent = insights.nextUrgeHours ? `${insights.nextUrgeHours.toFixed(1)}h` : '--';
+      effectEl.textContent = insights.overallEffect;
+
+      if (insights.count === 0) {
+        listEl.innerHTML = '<div class="text-gray-500 text-sm">Log a few healthy releases to unlock impact analysis.</div>';
+        return;
+      }
+
+      listEl.innerHTML = `
+        <div class="rounded-xl border border-white/5 bg-black/20 p-4">
+          <div class="text-gray-500 text-xs uppercase tracking-[0.2em] mb-2">Pattern read</div>
+          <div class="text-off-white">${insights.highlight}</div>
+        </div>
+        ${insights.tips.map(tip => `
           <div class="rounded-xl border border-electric-cyan/15 bg-electric-cyan/5 p-4 text-sm text-off-white">${tip}</div>
         `).join('')}
       `;
