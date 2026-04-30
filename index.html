@@ -274,7 +274,60 @@
               <div id="start-info" class="text-gray-600 text-xs mt-3"></div>
             </div>
           </div>
-          
+
+          <!-- Goal Progress Hero -->
+          <div id="goal-hero" class="hidden rounded-2xl bg-gradient-to-br from-warm-amber/10 via-electric-cyan/5 to-soft-rose/10 border border-electric-cyan/20 p-6 md:p-8 mb-6 transition-all duration-500">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <p class="text-xs uppercase tracking-[0.35em] text-gray-500 mb-1">Your goal progress</p>
+                <h3 class="font-syne text-xl md:text-2xl font-bold text-off-white">🎯 <span id="goal-hero-title">Stay strong</span></h3>
+              </div>
+              <button onclick="openGoalModal()" class="text-xs uppercase tracking-[0.2em] text-electric-cyan hover:text-electric-cyan/80">Edit goal</button>
+            </div>
+
+            <div class="flex items-center gap-6">
+              <!-- Circular Progress -->
+              <div class="relative w-20 h-20 md:w-24 md:h-24">
+                <svg class="w-20 h-20 md:w-24 md:h-24 transform -rotate-90" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="50" stroke="rgba(255,255,255,0.1)" stroke-width="8" fill="none"/>
+                  <circle id="goal-hero-circle" cx="60" cy="60" r="50" stroke="url(#heroGradient)" stroke-width="8" fill="none"
+                          stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="314"
+                          style="transition: stroke-dashoffset 1s ease-in-out"/>
+                </svg>
+                <defs>
+                  <linearGradient id="heroGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#00F5D4"/>
+                    <stop offset="50%" stop-color="#FF9F1C"/>
+                    <stop offset="100%" stop-color="#F72585"/>
+                  </linearGradient>
+                </defs>
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <div class="text-center">
+                    <div id="goal-hero-percent" class="font-mono text-lg font-bold text-off-white">0%</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Goal Stats -->
+              <div class="flex-1">
+                <div class="grid grid-cols-2 gap-4 mb-3">
+                  <div class="text-center">
+                    <div id="goal-hero-completed" class="font-mono text-xl text-electric-cyan">0</div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wider">Days done</div>
+                  </div>
+                  <div class="text-center">
+                    <div id="goal-hero-remaining" class="font-mono text-xl text-warm-amber">--</div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wider">Days left</div>
+                  </div>
+                </div>
+                <div class="text-sm text-gray-300 mb-2">
+                  <span id="goal-hero-targets">No goal set</span>
+                </div>
+                <div id="goal-hero-motivation" class="text-xs text-gray-500 italic">Set a goal to start tracking your progress</div>
+              </div>
+            </div>
+          </div>
+
           <div id="counter-actions" class="hidden flex justify-center gap-4 mt-4">
             <button id="edit-time-btn" class="text-gray-500 hover:text-electric-cyan text-sm transition-colors">
               Edit start time
@@ -1790,28 +1843,68 @@
 
     function renderGoalDisplay() {
       const goalDisplay = document.getElementById('goal-display');
-      const goalSummary = document.getElementById('goal-summary');
-      const goalProgressPercentMini = document.getElementById('goal-progress-percent-mini');
-      const goalProgressBarMini = document.getElementById('goal-progress-bar-mini');
-      const goalMotivationMini = document.getElementById('goal-motivation-mini');
-
-      if (!goalDisplay) return;
+      const goalHero = document.getElementById('goal-hero');
 
       if (state.goal) {
         const now = Date.now();
         const setDate = state.goal.setDate;
         const durationDays = state.goal.duration;
         const daysElapsed = Math.max(0, Math.floor((now - setDate) / (24 * 60 * 60 * 1000)));
+        const daysRemaining = Math.max(0, durationDays - daysElapsed);
         const progressPercent = Math.min(100, Math.max(0, (daysElapsed / durationDays) * 100));
 
-        goalSummary.textContent = `${durationDays} days clean from ${state.goal.targets.join(', ')}`;
-        if (goalProgressPercentMini) goalProgressPercentMini.textContent = `${progressPercent.toFixed(0)}%`;
-        if (goalProgressBarMini) goalProgressBarMini.style.width = `${progressPercent}%`;
-        if (goalMotivationMini) goalMotivationMini.textContent = getGoalMotivation(progressPercent, daysElapsed, durationDays);
+        // Update hero section
+        if (goalHero) {
+          goalHero.classList.remove('hidden');
 
-        goalDisplay.classList.remove('hidden');
+          // Dynamic styling based on progress
+          if (progressPercent >= 100) {
+            goalHero.className = 'rounded-2xl bg-gradient-to-br from-electric-cyan/20 via-green-400/10 to-electric-cyan/20 border border-electric-cyan/40 p-6 md:p-8 mb-6 transition-all duration-500';
+            document.getElementById('goal-hero-title').textContent = '🎉 Goal Complete!';
+          } else if (progressPercent >= 75) {
+            goalHero.className = 'rounded-2xl bg-gradient-to-br from-electric-cyan/15 via-warm-amber/10 to-soft-rose/15 border border-electric-cyan/30 p-6 md:p-8 mb-6 transition-all duration-500';
+            document.getElementById('goal-hero-title').textContent = 'Almost there!';
+          } else if (progressPercent >= 50) {
+            goalHero.className = 'rounded-2xl bg-gradient-to-br from-warm-amber/15 via-electric-cyan/10 to-warm-amber/15 border border-warm-amber/30 p-6 md:p-8 mb-6 transition-all duration-500';
+            document.getElementById('goal-hero-title').textContent = 'Halfway there!';
+          } else {
+            goalHero.className = 'rounded-2xl bg-gradient-to-br from-warm-amber/10 via-electric-cyan/5 to-soft-rose/10 border border-electric-cyan/20 p-6 md:p-8 mb-6 transition-all duration-500';
+            document.getElementById('goal-hero-title').textContent = 'Stay strong';
+          }
+
+          document.getElementById('goal-hero-completed').textContent = daysElapsed;
+          document.getElementById('goal-hero-remaining').textContent = daysRemaining;
+          document.getElementById('goal-hero-percent').textContent = `${progressPercent.toFixed(0)}%`;
+          document.getElementById('goal-hero-targets').textContent = `Clean from: ${state.goal.targets.join(', ')}`;
+          document.getElementById('goal-hero-motivation').textContent = getGoalMotivation(progressPercent, daysElapsed, durationDays);
+
+          // Animate hero circular progress
+          const heroCircle = document.getElementById('goal-hero-circle');
+          if (heroCircle) {
+            const circumference = 2 * Math.PI * 50;
+            const offset = circumference - (progressPercent / 100) * circumference;
+            heroCircle.style.strokeDashoffset = offset;
+          }
+        }
+
+        // Update mini display in focus board
+        if (goalDisplay) {
+          const goalSummary = document.getElementById('goal-summary');
+          const goalProgressPercentMini = document.getElementById('goal-progress-percent-mini');
+          const goalProgressBarMini = document.getElementById('goal-progress-bar-mini');
+          const goalMotivationMini = document.getElementById('goal-motivation-mini');
+
+          if (goalSummary) goalSummary.textContent = `${durationDays} days clean from ${state.goal.targets.join(', ')}`;
+          if (goalProgressPercentMini) goalProgressPercentMini.textContent = `${progressPercent.toFixed(0)}%`;
+          if (goalProgressBarMini) goalProgressBarMini.style.width = `${progressPercent}%`;
+          if (goalMotivationMini) goalMotivationMini.textContent = getGoalMotivation(progressPercent, daysElapsed, durationDays);
+
+          goalDisplay.classList.remove('hidden');
+        }
       } else {
-        goalDisplay.classList.add('hidden');
+        // Hide both sections when no goal
+        if (goalHero) goalHero.classList.add('hidden');
+        if (goalDisplay) goalDisplay.classList.add('hidden');
       }
     }
 
