@@ -326,6 +326,13 @@
                 <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-2">One clear action</div>
                 <div id="tracker-action-plan" class="text-off-white">Set your start time, then make the next 60 minutes friction-free.</div>
               </div>
+
+              <div id="goal-display" class="rounded-xl border border-warm-amber/15 bg-warm-amber/5 p-4 hidden">
+                <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-2">Your goal</div>
+                <div id="goal-summary" class="text-off-white mb-2"></div>
+                <div id="goal-progress" class="text-sm text-gray-400"></div>
+                <button onclick="openGoalModal()" class="text-xs text-warm-amber hover:text-warm-amber/80 mt-2 underline">Edit goal</button>
+              </div>
             </div>
           </div>
         </section>
@@ -368,6 +375,14 @@
               </div>
               <div class="font-syne text-lg text-white">Log natural</div>
               <div class="text-gray-500 text-sm mt-1">Track healthy release without spiral.</div>
+            </button>
+            <button onclick="openGoalModal()" class="action-tile rounded-2xl p-5 text-left">
+              <div class="flex items-start justify-between mb-3">
+                <span class="text-2xl">🎯</span>
+                <span class="text-[11px] text-warm-amber uppercase tracking-[0.2em]">Commitment</span>
+              </div>
+              <div class="font-syne text-lg text-white">Set goal</div>
+              <div class="text-gray-500 text-sm mt-1">Define what you're committing to quit.</div>
             </button>
             <button onclick="showMilestones()" class="action-tile rounded-2xl p-5 text-left md:col-span-2">
               <div class="flex items-start justify-between mb-3">
@@ -473,6 +488,49 @@
             <div class="stat-card rounded-2xl p-5">
               <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Last activity</div>
               <div id="last-activity" class="font-mono text-sm text-off-white">None yet</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Goal Progress -->
+        <section id="goal-progress-section" class="mb-6 hidden">
+          <div class="glass rounded-2xl p-5">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="font-syne text-lg font-bold">Goal Progress</h3>
+                <p class="text-gray-500 text-sm">How you're doing on your commitment</p>
+              </div>
+              <button onclick="openGoalModal()" class="text-xs uppercase tracking-[0.25em] text-electric-cyan hover:text-electric-cyan/80">Edit goal</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div class="stat-card rounded-xl p-4">
+                <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Goal duration</div>
+                <div id="goal-duration-display" class="font-mono text-2xl text-electric-cyan">--</div>
+              </div>
+              <div class="stat-card rounded-xl p-4">
+                <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Days completed</div>
+                <div id="goal-days-completed" class="font-mono text-2xl text-warm-amber">0</div>
+              </div>
+              <div class="stat-card rounded-xl p-4">
+                <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Days remaining</div>
+                <div id="goal-days-remaining" class="font-mono text-2xl text-soft-rose">--</div>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <div class="flex justify-between text-sm text-gray-400 mb-2">
+                <span>Progress</span>
+                <span id="goal-progress-percent">0%</span>
+              </div>
+              <div class="h-2 bg-carbon rounded-full overflow-hidden">
+                <div id="goal-progress-bar" class="h-full bg-gradient-to-r from-electric-cyan to-warm-amber rounded-full" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-2">You're quitting</div>
+              <div id="goal-targets-display" class="text-off-white"></div>
             </div>
           </div>
         </section>
@@ -804,6 +862,69 @@
     </div>
   </div>
 
+  <div id="goal-modal" class="fixed inset-0 bg-black/85 z-50 hidden items-center justify-center p-4">
+    <div class="glass rounded-3xl p-6 w-full max-w-lg">
+      <div class="flex items-start justify-between mb-5">
+        <div>
+          <p class="text-xs uppercase tracking-[0.35em] text-gray-500 mb-2">Goal setting</p>
+          <h3 class="font-syne text-2xl font-bold text-electric-cyan">Set your recovery goal</h3>
+          <p class="text-gray-400 text-sm mt-2">Define what you're committing to quit.</p>
+        </div>
+        <button onclick="closeGoalModal()" class="text-gray-500 hover:text-white text-2xl leading-none">&times;</button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="text-sm text-gray-400 mb-2 block">Duration</label>
+          <select id="goal-duration" class="w-full bg-carbon border border-electric-cyan/30 rounded-lg p-3 text-off-white focus:outline-none focus:border-electric-cyan">
+            <option value="7">7 days</option>
+            <option value="30">30 days</option>
+            <option value="60">60 days</option>
+            <option value="90" selected>90 days</option>
+            <option value="180">180 days</option>
+            <option value="365">1 year</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-sm text-gray-400 mb-2 block">What you're quitting (check all that apply)</label>
+          <div class="space-y-2">
+            <label class="flex items-center">
+              <input type="checkbox" id="goal-masturbation" class="mr-3 accent-electric-cyan">
+              <span class="text-off-white">Masturbation</span>
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" id="goal-porn" class="mr-3 accent-electric-cyan">
+              <span class="text-off-white">Porn</span>
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" id="goal-sex" class="mr-3 accent-electric-cyan">
+              <span class="text-off-white">Sex</span>
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" id="goal-ai-bots" class="mr-3 accent-electric-cyan">
+              <span class="text-off-white">AI bots</span>
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" id="goal-other" class="mr-3 accent-electric-cyan">
+              <span class="text-off-white">Other</span>
+            </label>
+          </div>
+        </div>
+
+        <div id="goal-other-input" class="hidden">
+          <label class="text-sm text-gray-400 mb-2 block">Specify other</label>
+          <input type="text" id="goal-other-text" placeholder="e.g., smoking, drinking" class="w-full bg-carbon border border-electric-cyan/30 rounded-lg p-3 text-off-white placeholder-gray-600 focus:outline-none focus:border-electric-cyan">
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 mt-6">
+        <button onclick="closeGoalModal()" class="text-gray-500 hover:text-white">Cancel</button>
+        <button onclick="saveGoal()" class="bg-electric-cyan text-deep-charcoal font-bold px-6 py-2 rounded-lg hover:opacity-90 transition-opacity">Set Goal</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 glass rounded-lg px-6 py-3 transform transition-all duration-300 translate-y-20 opacity-0 pointer-events-none z-50">
     <span id="toast-text"></span>
@@ -837,6 +958,7 @@
       journals: [],
       milestones: [],
       reasons: [],
+      goal: null,
       lastModified: Date.now()
     };
 
@@ -1353,6 +1475,7 @@
       document.getElementById('auth-signup-btn').addEventListener('click', signUpWithEmailPassword);
       document.getElementById('auth-link-btn').addEventListener('click', sendLoginLink);
       document.getElementById('auth-signout-btn').addEventListener('click', signOutUser);
+      document.getElementById('goal-other').addEventListener('change', toggleOtherInput);
 
       const authPasswordInput = document.getElementById('auth-password');
       if (authPasswordInput) {
@@ -1368,6 +1491,15 @@
         milestoneModal.addEventListener('click', (event) => {
           if (event.target === milestoneModal) {
             closeMilestonesModal();
+          }
+        });
+      }
+
+      const goalModal = document.getElementById('goal-modal');
+      if (goalModal) {
+        goalModal.addEventListener('click', (event) => {
+          if (event.target === goalModal) {
+            closeGoalModal();
           }
         });
       }
@@ -1590,6 +1722,34 @@
       elements.nextCheckpoint.textContent = tracker.nextCheckpoint;
       elements.nextCopy.textContent = tracker.nextCopy;
       elements.actionPlan.textContent = tracker.actionPlan;
+
+      renderGoalDisplay();
+    }
+
+    function renderGoalDisplay() {
+      const goalDisplay = document.getElementById('goal-display');
+      const goalSummary = document.getElementById('goal-summary');
+      const goalProgress = document.getElementById('goal-progress');
+
+      if (!goalDisplay || !goalSummary || !goalProgress) return;
+
+      if (state.goal) {
+        const now = Date.now();
+        const setDate = state.goal.setDate;
+        const durationDays = state.goal.duration;
+        const durationMs = durationDays * 24 * 60 * 60 * 1000;
+        const endDate = setDate + durationMs;
+        const daysElapsed = Math.floor((now - setDate) / (24 * 60 * 60 * 1000));
+        const daysRemaining = Math.max(0, durationDays - daysElapsed);
+        const progressPercent = Math.min(100, Math.max(0, (daysElapsed / durationDays) * 100));
+
+        goalSummary.textContent = `${durationDays} days clean from ${state.goal.targets.join(', ')}`;
+        goalProgress.textContent = `${daysElapsed} days completed, ${daysRemaining} remaining (${progressPercent.toFixed(0)}%)`;
+
+        goalDisplay.classList.remove('hidden');
+      } else {
+        goalDisplay.classList.add('hidden');
+      }
     }
 
     function updateUI() {
@@ -2090,6 +2250,80 @@
       alert(msg);
     }
 
+    // === GOAL MODAL ===
+    function openGoalModal() {
+      document.getElementById('goal-modal').classList.remove('hidden');
+      document.getElementById('goal-modal').classList.add('flex');
+
+      // Pre-fill current goal if exists
+      if (state.goal) {
+        document.getElementById('goal-duration').value = state.goal.duration;
+        document.getElementById('goal-masturbation').checked = state.goal.targets.includes('masturbation');
+        document.getElementById('goal-porn').checked = state.goal.targets.includes('porn');
+        document.getElementById('goal-sex').checked = state.goal.targets.includes('sex');
+        document.getElementById('goal-ai-bots').checked = state.goal.targets.includes('ai-bots');
+        const otherTargets = state.goal.targets.filter(t => !['masturbation', 'porn', 'sex', 'ai-bots'].includes(t));
+        document.getElementById('goal-other').checked = otherTargets.length > 0;
+        document.getElementById('goal-other-text').value = otherTargets.join(', ');
+      }
+      toggleOtherInput();
+    } else {
+      // Reset to defaults
+      document.getElementById('goal-duration').value = '90';
+      ['goal-masturbation', 'goal-porn', 'goal-sex', 'goal-ai-bots', 'goal-other'].forEach(id => {
+        document.getElementById(id).checked = false;
+      });
+      document.getElementById('goal-other-text').value = '';
+      toggleOtherInput();
+    }
+    }
+
+    function closeGoalModal() {
+      document.getElementById('goal-modal').classList.add('hidden');
+      document.getElementById('goal-modal').classList.remove('flex');
+    }
+
+    function toggleOtherInput() {
+      const otherChecked = document.getElementById('goal-other').checked;
+      const otherInput = document.getElementById('goal-other-input');
+      otherInput.classList.toggle('hidden', !otherChecked);
+    }
+
+    function saveGoal() {
+      const duration = parseInt(document.getElementById('goal-duration').value);
+      const targets = [];
+
+      if (document.getElementById('goal-masturbation').checked) targets.push('masturbation');
+      if (document.getElementById('goal-porn').checked) targets.push('porn');
+      if (document.getElementById('goal-sex').checked) targets.push('sex');
+      if (document.getElementById('goal-ai-bots').checked) targets.push('ai-bots');
+
+      if (document.getElementById('goal-other').checked) {
+        const otherText = document.getElementById('goal-other-text').value.trim();
+        if (otherText) {
+          targets.push(...otherText.split(',').map(t => t.trim()).filter(t => t));
+        }
+      }
+
+      if (targets.length === 0) {
+        showToast('Please select what you\'re quitting');
+        return;
+      }
+
+      state.goal = {
+        duration: duration,
+        targets: targets,
+        setDate: Date.now()
+      };
+
+      addActivity(`Set goal: ${duration} days clean from ${targets.join(', ')}`, Date.now(), 'goal');
+      saveState();
+      updateUI();
+      renderAnalytics();
+      showToast('Goal set! Track your progress.');
+      closeGoalModal();
+    }
+
     // === MILESTONES ===
     function getMilestoneDefinitions() {
       return [
@@ -2452,6 +2686,7 @@
 
     function renderAnalytics() {
       renderSummaryStats();
+      renderGoalProgress();
       renderWeeklyChart();
       renderEventMixChart();
       renderUrgeInsights();
@@ -2745,6 +2980,33 @@
       document.getElementById('last-activity').textContent = summary.lastActivity
         ? `${summary.lastActivity.type} · ${formatDateDisplay(summary.lastActivity.time)}`
         : 'None yet';
+    }
+
+    function renderGoalProgress() {
+      const section = document.getElementById('goal-progress-section');
+      if (!section) return;
+
+      if (state.goal) {
+        section.classList.remove('hidden');
+
+        const now = Date.now();
+        const setDate = state.goal.setDate;
+        const durationDays = state.goal.duration;
+        const durationMs = durationDays * 24 * 60 * 60 * 1000;
+        const endDate = setDate + durationMs;
+        const daysElapsed = Math.floor((now - setDate) / (24 * 60 * 60 * 1000));
+        const daysRemaining = Math.max(0, durationDays - daysElapsed);
+        const progressPercent = Math.min(100, Math.max(0, (daysElapsed / durationDays) * 100));
+
+        document.getElementById('goal-duration-display').textContent = `${durationDays} days`;
+        document.getElementById('goal-days-completed').textContent = daysElapsed;
+        document.getElementById('goal-days-remaining').textContent = daysRemaining;
+        document.getElementById('goal-progress-percent').textContent = `${progressPercent.toFixed(0)}%`;
+        document.getElementById('goal-progress-bar').style.width = `${progressPercent}%`;
+        document.getElementById('goal-targets-display').textContent = state.goal.targets.join(', ');
+      } else {
+        section.classList.add('hidden');
+      }
     }
 
     function renderWeeklyChart() {
