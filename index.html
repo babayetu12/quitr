@@ -2265,17 +2265,15 @@
         const otherTargets = state.goal.targets.filter(t => !['masturbation', 'porn', 'sex', 'ai-bots'].includes(t));
         document.getElementById('goal-other').checked = otherTargets.length > 0;
         document.getElementById('goal-other-text').value = otherTargets.join(', ');
+      } else {
+        // Reset to defaults
+        document.getElementById('goal-duration').value = '90';
+        ['goal-masturbation', 'goal-porn', 'goal-sex', 'goal-ai-bots', 'goal-other'].forEach(id => {
+          document.getElementById(id).checked = false;
+        });
+        document.getElementById('goal-other-text').value = '';
       }
       toggleOtherInput();
-    } else {
-      // Reset to defaults
-      document.getElementById('goal-duration').value = '90';
-      ['goal-masturbation', 'goal-porn', 'goal-sex', 'goal-ai-bots', 'goal-other'].forEach(id => {
-        document.getElementById(id).checked = false;
-      });
-      document.getElementById('goal-other-text').value = '';
-      toggleOtherInput();
-    }
     }
 
     function closeGoalModal() {
@@ -2589,7 +2587,7 @@
           activityListEl.innerHTML = '<div class="text-gray-600 text-sm text-center py-4">No activity yet</div>';
         } else {
           activityListEl.innerHTML = milestones.map((a, index) => {
-            const icon = a.category === 'start' ? '🏁' : a.category === 'relapse' ? '❌' : a.category === 'urge' ? '🚫' : a.category === 'natural' ? '🌱' : a.category === 'journal' ? '📝' : '⭐';
+        const icon = a.category === 'start' ? '🏁' : a.category === 'relapse' ? '❌' : a.category === 'urge' ? '🚫' : a.category === 'natural' ? '🌱' : a.category === 'journal' ? '📝' : a.category === 'goal' ? '🎯' : '⭐';
             const canDelete = a.category !== 'start';
             return `
               <div class="flex items-center gap-3 text-sm py-2 border-b border-white/5">
