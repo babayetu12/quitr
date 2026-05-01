@@ -1090,6 +1090,12 @@
       </div>
 
       <div class="space-y-4">
+        <!-- When did you peek -->
+        <div>
+          <label class="text-sm text-gray-400 mb-2 block">When did you peek?</label>
+          <input type="datetime-local" id="peek-time" class="w-full bg-carbon border border-electric-cyan/30 rounded-lg p-3 text-off-white focus:outline-none focus:border-electric-cyan">
+        </div>
+
         <!-- What you peeked at -->
         <div>
           <label class="text-sm text-gray-400 mb-2 block">What did you peek at? (check all that apply)</label>
@@ -1328,14 +1334,57 @@
 
     // === INITIALIZATION ===
     async function init() {
-      loadState();
-      setupEventListeners();
+      try {
+        console.log('[INIT] Starting app initialization');
+        loadState();
+        setupEventListeners();
 
-      if (supabaseClient) {
-        await bootstrapAuth();
-        if (currentUser) {
-          await loadFromSupabaseOnInit();
+        if (supabaseClient) {
+          console.log('[INIT] Initializing Supabase auth');
+          await bootstrapAuth();
+          if (currentUser) {
+            console.log('[INIT] User authenticated, loading cloud data');
+            await loadFromSupabaseOnInit();
+          } else {
+            console.log('[INIT] No user authenticated, using local data only');
+          }
+        } else {
+          console.error('[AUTH] Supabase auth client failed to initialize');
+          setAuthMessage('Authentication unavailable. Reload the page.', true);
+          showToast('Auth failed to load. Local mode only.');
         }
+
+        console.log('[INIT] Updating UI and rendering');
+        updateUI();
+        if (state.startTime) startCounter();
+        renderActivityList();
+        renderAnalytics();
+
+        // Add debug buttons to analytics page
+        setTimeout(() => {
+          const analyticsSection = document.querySelector('#page-analytics .glass:last-child');
+          if (analyticsSection) {
+            const debugDiv = document.createElement('div');
+            debugDiv.innerHTML = `
+              <div class="border-t border-white/10 pt-4 mt-6">
+                <p class="text-xs text-gray-500 mb-2">Debug Tools (if data issues)</p>
+                <div class="flex flex-wrap gap-2">
+                  <button onclick="debugData()" class="text-xs px-3 py-1 bg-gray-700 rounded">Debug Info</button>
+                  <button onclick="exportData()" class="text-xs px-3 py-1 bg-electric-cyan text-deep-charcoal rounded">Export Data</button>
+                  <button onclick="clearAllData()" class="text-xs px-3 py-1 bg-soft-rose rounded">Clear All</button>
+                </div>
+              </div>
+            `;
+            analyticsSection.appendChild(debugDiv);
+          }
+        }, 1000);
+
+        console.log('[INIT] App initialization complete');
+      } catch (error) {
+        console.error('[INIT] Critical error during initialization:', error);
+        showToast('App failed to load. Check console for errors.');
+      }
+    }
       } else {
         console.error('[AUTH] Supabase auth client failed to initialize');
         setAuthMessage('Authentication unavailable. Reload the page.', true);
@@ -1389,7 +1438,7 @@
             reasons: Array.isArray(parsed.reasons) ? parsed.reasons : [],
             streaks: Array.isArray(parsed.streaks) ? parsed.streaks : []
           };
-          console.log('[DATA] Loaded state with', state.urges.length, 'urges,', state.relapses.length, 'relapses');
+          console.log('[DATA] Loaded state with', state.urges.length, 'urges,', state.relapses.length, 'relapses,', state.peeks.length, 'peeks');
         } catch (e) {
           console.error('Failed to load state:', e);
           showToast('Error loading data. Starting fresh.');
@@ -1460,14 +1509,20 @@
       }
 
       try {
+        console.log('[AUTH] Checking for existing session');
         const { data, error } = await supabaseClient.auth.getSession();
         if (error) {
           console.error('[AUTH] Session check failed:', error.message);
+          console.error('[AUTH] Error details:', error);
+        } else {
+          console.log('[AUTH] Session check result:', data?.session ? 'Session found' : 'No session');
         }
         currentUser = data?.session?.user || null;
+        console.log('[AUTH] Current user after session check:', currentUser?.email || 'None');
         setAuthUI();
       } catch (e) {
         console.error('[AUTH] Bootstrap failed:', e);
+        console.error('[AUTH] Bootstrap error details:', e);
       }
 
       supabaseClient.auth.onAuthStateChange(async (_event, session) => {
@@ -1672,6 +1727,8 @@
       console.log('[STATE] Saving locally', {
         startTime: state.startTime,
         urges: state.urges.length,
+        relapses: state.relapses.length,
+        peeks: state.peeks.length,
         naturals: state.naturals.length,
         journals: state.journals.length,
         streaks: state.streaks.length,
@@ -2801,6 +2858,12 @@
     function openPeekModal() {
       document.getElementById('peek-modal').classList.remove('hidden');
       document.getElementById('peek-modal').classList.add('flex');
+
+      // Set default time to now
+      const now = new Date();
+      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+      document.getElementById('peek-time').value = now.toISOString().slice(0, 16);
+
       updatePeekUrgeDisplay();
     }
 
@@ -2826,13 +2889,19 @@
         return;
       }
 
+      const timeValue = document.getElementById('peek-time').value;
+      if (!timeValue) {
+        showToast('Please set when you peeked');
+        return;
+      }
+
       const trigger = document.getElementById('peek-trigger').value;
       const duration = document.getElementById('peek-duration').value;
       const urgeAfter = parseInt(document.getElementById('peek-urge-after').value);
       const notes = document.getElementById('peek-notes').value.trim();
 
       const peekData = {
-        time: Date.now(),
+        time: new Date(timeValue).getTime(),
         exposures: exposures,
         trigger: trigger || null,
         duration: duration || null,
