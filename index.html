@@ -1385,18 +1385,6 @@
         showToast('App failed to load. Check console for errors.');
       }
     }
-      } else {
-        console.error('[AUTH] Supabase auth client failed to initialize');
-        setAuthMessage('Authentication unavailable. Reload the page.', true);
-        showToast('Auth failed to load. Local mode only.');
-      }
-
-      updateUI();
-      if (state.startTime) startCounter();
-      renderActivityList();
-      renderAnalytics();
-
-      // Add debug buttons to analytics page
       setTimeout(() => {
         const analyticsSection = document.querySelector('#page-analytics .glass:last-child');
         if (analyticsSection) {
