@@ -440,6 +440,14 @@
               <div class="font-syne text-lg text-white">Log natural</div>
               <div class="text-gray-500 text-sm mt-1">Track healthy release without spiral.</div>
             </button>
+            <button onclick="openPeekModal()" class="action-tile rounded-2xl p-5 text-left">
+              <div class="flex items-start justify-between mb-3">
+                <span class="text-2xl">👀</span>
+                <span class="text-[11px] text-warm-amber uppercase tracking-[0.2em]">Peek</span>
+              </div>
+              <div class="font-syne text-lg text-white">Log peek</div>
+              <div class="text-gray-500 text-sm mt-1">Track mild exposure without full relapse.</div>
+            </button>
             <button onclick="openRelapseModal()" class="action-tile rounded-2xl p-5 text-left">
               <div class="flex items-start justify-between mb-3">
                 <span class="text-2xl">⚠️</span>
@@ -941,6 +949,22 @@
           </div>
         </section>
 
+        <!-- Peeks List -->
+        <section class="mb-6">
+          <div class="glass rounded-2xl p-5">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="font-syne text-lg font-bold">Peeks</h3>
+                <p class="text-gray-500 text-sm">Mild exposure logs without relapse</p>
+              </div>
+              <div id="logs-peek-count" class="text-xs uppercase tracking-[0.25em] text-gray-500">0 logs</div>
+            </div>
+            <div id="logs-peek-list" class="space-y-2 max-h-96 overflow-y-auto">
+              <div class="text-gray-600 text-sm text-center py-4">No peeks logged yet</div>
+            </div>
+          </div>
+        </section>
+
         <!-- Activity Feed (All) -->
         <section class="mb-6">
           <div class="glass rounded-2xl p-5">
@@ -1053,6 +1077,97 @@
     </div>
   </div>
 
+  <!-- Modal for Peek Logging -->
+  <div id="peek-modal" class="fixed inset-0 bg-black/85 z-50 hidden items-center justify-center p-4">
+    <div class="glass rounded-3xl p-6 w-full max-w-lg">
+      <div class="flex items-start justify-between mb-5">
+        <div>
+          <p class="text-xs uppercase tracking-[0.35em] text-gray-500 mb-2">Mild exposure</p>
+          <h3 class="font-syne text-2xl font-bold text-electric-cyan">Log Your Peek</h3>
+          <p class="text-gray-400 text-sm mt-2">Track mild exposure without physical action</p>
+        </div>
+        <button onclick="closePeekModal()" class="text-gray-500 hover:text-white text-2xl leading-none">&times;</button>
+      </div>
+
+      <div class="space-y-4">
+        <!-- What you peeked at -->
+        <div>
+          <label class="text-sm text-gray-400 mb-2 block">What did you peek at? (check all that apply)</label>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="flex items-center">
+              <input type="checkbox" id="peek-porn" class="mr-2 accent-electric-cyan">
+              <span class="text-off-white text-sm">Porn images</span>
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" id="peek-audio" class="mr-2 accent-electric-cyan">
+              <span class="text-off-white text-sm">Audio porn</span>
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" id="peek-ai-chat" class="mr-2 accent-electric-cyan">
+              <span class="text-off-white text-sm">AI chat</span>
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" id="peek-social-media" class="mr-2 accent-electric-cyan">
+              <span class="text-off-white text-sm">Social media</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Trigger -->
+        <div>
+          <label class="text-sm text-gray-400 mb-2 block">What triggered this peek? (optional)</label>
+          <select id="peek-trigger" class="w-full bg-carbon border border-electric-cyan/30 rounded-lg p-3 text-off-white focus:outline-none focus:border-electric-cyan">
+            <option value="">Select trigger</option>
+            <option value="boredom">Boredom</option>
+            <option value="stress">Stress/Anxiety</option>
+            <option value="loneliness">Loneliness</option>
+            <option value="tired">Tired/Exhaustion</option>
+            <option value="social-media">Social Media</option>
+            <option value="porn-reminder">Porn reminder</option>
+            <option value="habit">Habit/Automatic</option>
+            <option value="curiosity">Curiosity</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <!-- How long -->
+        <div>
+          <label class="text-sm text-gray-400 mb-2 block">How long did you peek?</label>
+          <select id="peek-duration" class="w-full bg-carbon border border-electric-cyan/30 rounded-lg p-3 text-off-white focus:outline-none focus:border-electric-cyan">
+            <option value="">Select duration</option>
+            <option value="quick">Quick glance (< 1 min)</option>
+            <option value="short">Short (1-5 min)</option>
+            <option value="medium">Medium (5-15 min)</option>
+            <option value="long">Long (15+ min)</option>
+          </select>
+        </div>
+
+        <!-- Urge level at end -->
+        <div>
+          <label class="text-sm text-gray-400 mb-2 block">Urge level after peeking? (optional)</label>
+          <input type="range" id="peek-urge-after" min="0" max="10" value="0" class="w-full h-2 bg-carbon rounded-lg appearance-none cursor-pointer" oninput="updatePeekUrgeDisplay()">
+          <div class="flex justify-between text-xs text-gray-600 mt-2">
+            <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+          </div>
+          <div class="text-center text-sm text-gray-400 mt-1">
+            Urge level: <span id="peek-urge-value">0</span>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div>
+          <label class="text-sm text-gray-400 mb-2 block">Any notes? (optional)</label>
+          <textarea id="peek-notes" class="w-full bg-carbon border border-electric-cyan/30 rounded-lg p-3 text-off-white placeholder-gray-600 focus:outline-none focus:border-electric-cyan resize-none" rows="2" placeholder="What were you thinking? Did you stop yourself?"></textarea>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 mt-6">
+        <button onclick="closePeekModal()" class="text-gray-500 hover:text-white">Cancel</button>
+        <button onclick="savePeek()" class="bg-warm-amber text-deep-charcoal font-bold px-6 py-2 rounded-lg hover:opacity-90 transition-colors">Log Peek</button>
+      </div>
+    </div>
+  </div>
+
   <div id="goal-modal" class="fixed inset-0 bg-black/85 z-50 hidden items-center justify-center p-4">
     <div class="glass rounded-3xl p-6 w-full max-w-lg">
       <div class="flex items-start justify-between mb-5">
@@ -1149,6 +1264,7 @@
       journals: [],
       milestones: [],
       reasons: [],
+      peeks: [],
       goal: null,
       lastModified: Date.now()
     };
@@ -1263,6 +1379,7 @@
             ...parsed,
             // Add default values for new fields if missing
             goal: parsed.goal || null,
+            peeks: Array.isArray(parsed.peeks) ? parsed.peeks : [],
             // Ensure arrays exist
             urges: Array.isArray(parsed.urges) ? parsed.urges : [],
             relapses: Array.isArray(parsed.relapses) ? parsed.relapses : [],
@@ -1779,6 +1896,25 @@
             closeGoalModal();
           }
         });
+      }
+
+      const peekModal = document.getElementById('peek-modal');
+      if (peekModal) {
+        peekModal.addEventListener('click', (event) => {
+          if (event.target === peekModal) {
+            closePeekModal();
+          }
+        });
+      }
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          closeMilestonesModal();
+          closeGoalModal();
+          closeRelapseModal();
+          closePeekModal();
+        }
+      });
       }
 
       const relapseModal = document.getElementById('relapse-modal');
@@ -2661,6 +2797,61 @@
       closeGoalModal();
     }
 
+    // === PEEK LOGGING ===
+    function openPeekModal() {
+      document.getElementById('peek-modal').classList.remove('hidden');
+      document.getElementById('peek-modal').classList.add('flex');
+      updatePeekUrgeDisplay();
+    }
+
+    function closePeekModal() {
+      document.getElementById('peek-modal').classList.add('hidden');
+      document.getElementById('peek-modal').classList.remove('flex');
+    }
+
+    function updatePeekUrgeDisplay() {
+      const level = parseInt(document.getElementById('peek-urge-after').value);
+      document.getElementById('peek-urge-value').textContent = level;
+    }
+
+    function savePeek() {
+      const exposures = [];
+      if (document.getElementById('peek-porn').checked) exposures.push('porn');
+      if (document.getElementById('peek-audio').checked) exposures.push('audio');
+      if (document.getElementById('peek-ai-chat').checked) exposures.push('ai-chat');
+      if (document.getElementById('peek-social-media').checked) exposures.push('social-media');
+
+      if (exposures.length === 0) {
+        showToast('Please select what you peeked at');
+        return;
+      }
+
+      const trigger = document.getElementById('peek-trigger').value;
+      const duration = document.getElementById('peek-duration').value;
+      const urgeAfter = parseInt(document.getElementById('peek-urge-after').value);
+      const notes = document.getElementById('peek-notes').value.trim();
+
+      const peekData = {
+        time: Date.now(),
+        exposures: exposures,
+        trigger: trigger || null,
+        duration: duration || null,
+        urgeAfter: urgeAfter,
+        notes: notes || null,
+        // This is a peek, not a relapse - no streak interruption
+      };
+
+      // Add to a new 'peeks' array in state
+      if (!state.peeks) state.peeks = [];
+      state.peeks.push(peekData);
+
+      addActivity(`Peek logged: ${exposures.join(', ')}`, Date.now(), 'peek');
+      saveState();
+      renderAnalytics();
+      showToast('Peek logged. Good job stopping yourself!');
+      closePeekModal();
+    }
+
     // === MILESTONES ===
     function getMilestoneDefinitions() {
       return [
@@ -2785,7 +2976,7 @@
       }
 
       container.innerHTML = state.milestones.slice(0, 10).map((a, index) => {
-        const icon = a.category === 'start' ? '🏁' : a.category === 'relapse' ? '❌' : a.category === 'urge' ? '🚫' : a.category === 'natural' ? '🌱' : a.category === 'journal' ? '📝' : '⭐';
+        const icon = a.category === 'start' ? '🏁' : a.category === 'relapse' ? '❌' : a.category === 'urge' ? '🚫' : a.category === 'natural' ? '🌱' : a.category === 'journal' ? '📝' : a.category === 'peek' ? '👀' : '⭐';
         const canDelete = a.category !== 'start';
         return `
           <div class="flex items-center gap-3 text-sm py-2 border-b border-white/5">
@@ -2806,7 +2997,7 @@
         return;
       }
 
-      const label = entry.category === 'natural' ? 'healthy release' : entry.category === 'urge' ? 'urge' : entry.category === 'relapse' ? 'relapse' : 'log';
+      const label = entry.category === 'natural' ? 'healthy release' : entry.category === 'urge' ? 'urge' : entry.category === 'relapse' ? 'relapse' : entry.category === 'peek' ? 'peek' : 'log';
       if (!confirm(`Delete this ${label}? This cannot be undone.`)) return;
 
       state.milestones.splice(feedIndex, 1);
@@ -2822,6 +3013,8 @@
         removeClosest(state.urges, item => Math.abs((item.time || 0) - entry.time) < 1000);
       } else if (entry.category === 'relapse') {
         removeClosest(state.relapses, item => Math.abs((item.time || 0) - entry.time) < 1000);
+      } else if (entry.category === 'peek') {
+        removeClosest(state.peeks, item => Math.abs((item.time || 0) - entry.time) < 1000);
       } else if (entry.category === 'journal') {
         removeClosest(state.journals, item => Math.abs((item.time || 0) - entry.time) < 1000);
       }
@@ -3028,6 +3221,7 @@
       renderEventMixChart();
       renderUrgeInsights();
       renderRelapseInsights();
+      renderPeeksList();
       renderHealthyReleaseInsights();
       renderStreakHistory();
       renderAchievements();
@@ -3336,6 +3530,65 @@
           <div class="rounded-xl border border-electric-cyan/15 bg-electric-cyan/5 p-4 text-sm text-off-white">${tip}</div>
         `).join('')}
       `;
+    }
+
+    function renderPeeksList() {
+      const countEl = document.getElementById('logs-peek-count');
+      const listEl = document.getElementById('logs-peek-list');
+
+      if (!countEl || !listEl) return;
+
+      const peeks = Array.isArray(state.peeks) ? state.peeks : [];
+      countEl.textContent = `${peeks.length} log${peeks.length === 1 ? '' : 's'}`;
+
+      if (peeks.length === 0) {
+        listEl.innerHTML = '<div class="text-gray-600 text-sm text-center py-4">No peeks logged yet</div>';
+        return;
+      }
+
+      listEl.innerHTML = peeks.slice(0, 50).map((peek, index) => {
+        const exposures = Array.isArray(peek.exposures) ? peek.exposures : [];
+        const trigger = peek.trigger && peek.trigger !== 'unknown' ? peek.trigger : '';
+        const duration = peek.duration || '';
+        const urgeAfter = peek.urgeAfter !== undefined ? peek.urgeAfter : '';
+        const notes = peek.notes || '';
+
+        return `
+          <div class="rounded-xl border border-white/5 bg-black/20 p-4">
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">👀</span>
+                <span class="font-bold text-off-white">${exposures.join(', ')}</span>
+              </div>
+              <div class="text-xs text-gray-500">${formatDateDisplay(peek.time)}</div>
+            </div>
+            <div class="space-y-1 text-sm text-gray-400">
+              ${trigger ? `<div><strong>Trigger:</strong> ${trigger}</div>` : ''}
+              ${duration ? `<div><strong>Duration:</strong> ${duration}</div>` : ''}
+              ${urgeAfter !== '' ? `<div><strong>Urge after:</strong> ${urgeAfter}/10</div>` : ''}
+              ${notes ? `<div><strong>Notes:</strong> ${notes}</div>` : ''}
+            </div>
+            <button onclick="deletePeek(${index})" class="mt-2 text-xs text-gray-500 hover:text-soft-rose transition-colors">Delete</button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function deletePeek(index) {
+      const peeks = Array.isArray(state.peeks) ? state.peeks : [];
+      const peek = peeks[index];
+      if (!peek) return;
+
+      if (!confirm(`Delete this peek log? This cannot be undone.`)) return;
+
+      state.peeks.splice(index, 1);
+      // Remove from activity feed too
+      state.milestones = state.milestones.filter(m => !(m.category === 'peek' && Math.abs((m.time || 0) - peek.time) < 1000));
+
+      saveState();
+      renderPeeksList();
+      renderActivityList();
+      showToast('Peek deleted');
     }
 
     function getHealthyReleaseInsights() {
