@@ -3106,15 +3106,6 @@
         ? 'Most urges are manageable (1-6). Early intervention is working.'
         : 'Many urges are spiking (7-10). Build friction before peak times.';
 
-      const coachTips = [];
-      coachTips.push(`Plan a 10-minute replacement routine before ${peakHourLabel}.`);
-      coachTips.push(highShare >= 40
-        ? 'High-intensity urges are common. Use stronger interruption: phone away + walk + cold water.'
-        : 'Most urges stay below high intensity. Catch them early with short resets and breathing.');
-      coachTips.push(recentCount > previousCount
-        ? 'This week is heavier. Reduce exposure windows and tighten evening structure.'
-        : 'You are not trending worse. Keep repeating what is already working.');
-
       // Analyze trigger patterns
       const topTrigger = Object.entries(triggerBuckets).sort(([,a], [,b]) => b - a)[0];
       const triggerLabel = topTrigger ? `${topTrigger[0]} (${Math.round((topTrigger[1] / urges.length) * 100)}%)` : 'No pattern yet';
