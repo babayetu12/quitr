@@ -440,21 +440,29 @@
               <div class="font-syne text-lg text-white">Log natural</div>
               <div class="text-gray-500 text-sm mt-1">Track healthy release without spiral.</div>
             </button>
+            <button onclick="openRelapseModal()" class="action-tile rounded-2xl p-5 text-left">
+              <div class="flex items-start justify-between mb-3">
+                <span class="text-2xl">⚠️</span>
+                <span class="text-[11px] text-soft-rose uppercase tracking-[0.2em]">Honest</span>
+              </div>
+              <div class="font-syne text-lg text-white">Log relapse</div>
+              <div class="text-gray-500 text-sm mt-1">Track what happened to understand patterns.</div>
+            </button>
             <button onclick="openGoalModal()" class="action-tile rounded-2xl p-5 text-left">
               <div class="flex items-start justify-between mb-3">
                 <span class="text-2xl">🎯</span>
-                <span class="text-[11px] text-warm-amber uppercase tracking-[0.2em]">Commitment</span>
+                <span class="text-[11px] text-warm-amber uppercase tracking-[0.2em]">Optional</span>
               </div>
-              <div class="font-syne text-lg text-white">Set goal</div>
-              <div class="text-gray-500 text-sm mt-1">Define what you're committing to quit.</div>
+              <div class="font-syne text-lg text-white">Optional goals</div>
+              <div class="text-gray-500 text-sm mt-1">Set goals only when you're ready for structure.</div>
             </button>
             <button onclick="showMilestones()" class="action-tile rounded-2xl p-5 text-left md:col-span-2">
               <div class="flex items-start justify-between mb-3">
-                <span class="text-2xl">🏆</span>
-                <span class="text-[11px] text-purple-400 uppercase tracking-[0.2em]">Progression</span>
+                <span class="text-2xl">📊</span>
+                <span class="text-[11px] text-purple-400 uppercase tracking-[0.2em]">Insights</span>
               </div>
-              <div class="font-syne text-lg text-white">Milestone command center</div>
-              <div class="text-gray-500 text-sm mt-1">Open your full ladder, status, and ETA across every checkpoint.</div>
+              <div class="font-syne text-lg text-white">View patterns</div>
+              <div class="text-gray-500 text-sm mt-1">Analyze your urge and relapse patterns.</div>
             </button>
           </div>
         </section>
@@ -729,10 +737,50 @@
                 <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Most vulnerable day</div>
                 <div id="insight-peak-day" class="font-mono text-lg text-purple-400">--</div>
               </div>
+              <div class="stat-card rounded-xl p-4">
+                <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Top trigger</div>
+                <div id="insight-top-trigger" class="font-mono text-lg text-warm-amber">--</div>
+              </div>
             </div>
 
             <div id="urge-insights-list" class="space-y-3">
               <div class="text-gray-500 text-sm">Log a few urges to unlock personalized insights.</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Relapse Patterns -->
+        <section class="mb-6">
+          <div class="glass rounded-2xl p-5">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="font-syne text-lg font-bold">Relapse Patterns</h3>
+                <p class="text-gray-500 text-sm">What leads to your relapses and how to prevent them</p>
+              </div>
+              <div id="relapse-insights-count" class="text-xs uppercase tracking-[0.25em] text-gray-500">0 logs</div>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              <div class="stat-card rounded-xl p-4">
+                <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Common method</div>
+                <div id="relapse-common-method" class="font-mono text-2xl text-soft-rose">--</div>
+              </div>
+              <div class="stat-card rounded-xl p-4">
+                <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Top trigger</div>
+                <div id="relapse-top-trigger" class="font-mono text-2xl text-warm-amber">--</div>
+              </div>
+              <div class="stat-card rounded-xl p-4">
+                <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Avg satisfaction</div>
+                <div id="relapse-avg-satisfaction" class="font-mono text-2xl text-green-400">--</div>
+              </div>
+              <div class="stat-card rounded-xl p-4">
+                <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Quick relapses</div>
+                <div id="relapse-quick-count" class="font-mono text-2xl text-electric-cyan">0</div>
+              </div>
+            </div>
+
+            <div id="relapse-insights-list" class="space-y-3">
+              <div class="text-gray-500 text-sm">Log relapses to understand your patterns and build prevention strategies.</div>
             </div>
           </div>
         </section>
@@ -912,6 +960,24 @@
         <button onclick="closeUrgeModal()" class="text-gray-500 hover:text-white text-2xl">&times;</button>
       </div>
       <p class="text-gray-400 text-sm mb-6">How strong is the pull right now?</p>
+
+      <!-- Urge Context -->
+      <div class="mb-4">
+        <label class="text-sm text-gray-400 mb-2 block">What triggered this urge?</label>
+        <select id="urge-trigger" class="w-full bg-carbon border border-electric-cyan/30 rounded-lg p-3 text-off-white focus:outline-none focus:border-electric-cyan">
+          <option value="">Select trigger (optional)</option>
+          <option value="boredom">Boredom</option>
+          <option value="stress">Stress/Anxiety</option>
+          <option value="loneliness">Loneliness</option>
+          <option value="tired">Tired/Exhaustion</option>
+          <option value="social-media">Social Media</option>
+          <option value="porn-reminder">Porn reminder</option>
+          <option value="habit">Habit/Automatic</option>
+          <option value="curiosity">Curiosity</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
       <div class="mb-6">
         <input type="range" id="urge-slider" min="1" max="10" value="5" class="w-full h-2 bg-carbon rounded-lg appearance-none cursor-pointer" oninput="updateUrgeDisplay()">
         <div class="flex justify-between text-xs text-gray-600 mt-2">
@@ -924,7 +990,7 @@
       </div>
       <div class="flex justify-end gap-3 mt-4">
         <button onclick="closeUrgeModal()" class="text-gray-500 hover:text-white">Cancel</button>
-        <button onclick="saveUrge()" class="bg-warm-amber text-deep-charcoal font-bold px-6 py-2 rounded-lg">Log</button>
+        <button onclick="saveUrge()" class="bg-warm-amber text-deep-charcoal font-bold px-6 py-2 rounded-lg">Log Urge</button>
       </div>
     </div>
   </div>
@@ -1619,9 +1685,20 @@
         });
       }
 
+      const relapseModal = document.getElementById('relapse-modal');
+      if (relapseModal) {
+        relapseModal.addEventListener('click', (event) => {
+          if (event.target === relapseModal) {
+            closeRelapseModal();
+          }
+        });
+      }
+
       document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
           closeMilestonesModal();
+          closeGoalModal();
+          closeRelapseModal();
         }
       });
     }
@@ -2053,17 +2130,27 @@
 
     function saveUrge() {
       const level = parseInt(document.getElementById('urge-slider').value);
-      
-      state.urges.push({ time: Date.now(), level: level });
-      
+      const trigger = document.getElementById('urge-trigger').value;
+
+      const urgeData = {
+        time: Date.now(),
+        level: level,
+        trigger: trigger || null
+      };
+
+      state.urges.push(urgeData);
+
       if (level >= 9) {
         // Acted on it - counts as relapse
         state.relapses.push({
           time: Date.now(),
           streakDuration: Date.now() - state.startTime,
-          triggerLevel: level
+          triggerLevel: level,
+          methods: ['urge-act'], // Mark as urge that was acted upon
+          trigger: trigger,
+          notes: 'High urge level - acted on impulse'
         });
-        
+
         // Close current streak
         state.streaks.push({
           start: state.currentStreak.start,
@@ -2073,7 +2160,7 @@
         });
 
         addActivity(`Relapsed (urge ${level})`, Date.now(), 'relapse');
-        
+
         // Reset
         state.startTime = null;
         state.currentStreak = { start: null, urgesResisted: 0 };
@@ -2087,7 +2174,7 @@
         saveState();
         showToast(`Urge level ${level} logged - you stayed strong!`);
       }
-      
+
       renderActivityList();
       closeUrgeModal();
     }
@@ -2844,6 +2931,7 @@
       renderWeeklyChart();
       renderEventMixChart();
       renderUrgeInsights();
+      renderRelapseInsights();
       renderHealthyReleaseInsights();
       renderStreakHistory();
       renderAchievements();
@@ -2866,6 +2954,7 @@
 
       const hourlyBuckets = new Array(24).fill(0);
       const dailyBuckets = new Array(7).fill(0);
+      const triggerBuckets = {};
       const now = Date.now();
       const weekMs = 7 * 24 * 60 * 60 * 1000;
       let totalIntensity = 0;
@@ -2884,6 +2973,10 @@
         if (level >= 7) highIntensityCount += 1;
         hourlyBuckets[hour] += 1;
         dailyBuckets[day] += 1;
+
+        // Track triggers
+        const trigger = urge.trigger || 'unknown';
+        triggerBuckets[trigger] = (triggerBuckets[trigger] || 0) + 1;
 
         if (time >= now - weekMs) {
           recentCount += 1;
@@ -2926,12 +3019,45 @@
         ? 'This week is heavier. Reduce exposure windows and tighten evening structure.'
         : 'You are not trending worse. Keep repeating what is already working.');
 
+      // Analyze trigger patterns
+      const topTrigger = Object.entries(triggerBuckets).sort(([,a], [,b]) => b - a)[0];
+      const triggerLabel = topTrigger ? `${topTrigger[0]} (${Math.round((topTrigger[1] / urges.length) * 100)}%)` : 'No pattern yet';
+
+      // Enhanced coach tips with trigger awareness
+      const coachTips = [];
+      coachTips.push(`Plan a 10-minute replacement routine before ${peakHourLabel}.`);
+
+      if (topTrigger && topTrigger[0] !== 'unknown') {
+        const trigger = topTrigger[0];
+        if (trigger === 'boredom') {
+          coachTips.push('Boredom is your top trigger. Build better alternatives: exercise, hobbies, social activities.');
+        } else if (trigger === 'stress') {
+          coachTips.push('Stress triggers urges. Try 5-minute breathing exercises or stress balls when tension builds.');
+        } else if (trigger === 'loneliness') {
+          coachTips.push('Loneliness patterns suggest connection helps. Reach out to friends or join communities.');
+        } else if (trigger === 'social-media') {
+          coachTips.push('Social media is a trigger. Use app blockers and set phone boundaries.');
+        } else if (trigger === 'tired') {
+          coachTips.push('Fatigue triggers urges. Prioritize sleep and take power naps when needed.');
+        } else {
+          coachTips.push(`Your top trigger is "${trigger}". Identify and create friction for this situation.`);
+        }
+      }
+
+      coachTips.push(highShare >= 40
+        ? 'High-intensity urges are common. Use stronger interruption: phone away + walk + cold water.'
+        : 'Most urges stay below high intensity. Catch them early with short resets and breathing.');
+      coachTips.push(recentCount > previousCount
+        ? 'This week is heavier. Reduce exposure windows and tighten evening structure.'
+        : 'You are not trending worse. Keep repeating what is already working.');
+
       return {
         count: urges.length,
         avgIntensity,
         highShare,
         peakHourLabel,
         peakDayLabel,
+        triggerLabel,
         trendLabel,
         recoveryWindowLabel,
         coachTips
@@ -2944,8 +3070,9 @@
       const highShareEl = document.getElementById('insight-high-share');
       const peakHourEl = document.getElementById('insight-peak-hour');
       const peakDayEl = document.getElementById('insight-peak-day');
+      const topTriggerEl = document.getElementById('insight-top-trigger');
       const listEl = document.getElementById('urge-insights-list');
-      if (!countEl || !avgEl || !highShareEl || !peakHourEl || !peakDayEl || !listEl) return;
+      if (!countEl || !avgEl || !highShareEl || !peakHourEl || !peakDayEl || !topTriggerEl || !listEl) return;
 
       const insights = getUrgeInsights();
       countEl.textContent = `${insights.count} log${insights.count === 1 ? '' : 's'}`;
@@ -2953,6 +3080,7 @@
       highShareEl.textContent = `${Math.round(insights.highShare)}%`;
       peakHourEl.textContent = insights.peakHourLabel;
       peakDayEl.textContent = insights.peakDayLabel;
+      topTriggerEl.textContent = insights.triggerLabel;
 
       if (insights.count === 0) {
         listEl.innerHTML = '<div class="text-gray-500 text-sm">Log a few urges to unlock personalized insights.</div>';
@@ -2969,6 +3097,155 @@
           <div class="text-off-white">${insights.recoveryWindowLabel}</div>
         </div>
         ${insights.coachTips.map(tip => `
+          <div class="rounded-xl border border-electric-cyan/15 bg-electric-cyan/5 p-4 text-sm text-off-white">${tip}</div>
+        `).join('')}
+      `;
+    }
+
+    function getRelapseInsights() {
+      const relapses = Array.isArray(state.relapses) ? state.relapses : [];
+      if (relapses.length === 0) {
+        return {
+          count: 0,
+          commonMethod: '--',
+          topTrigger: '--',
+          avgSatisfaction: '--',
+          quickCount: 0,
+          insights: [],
+          preventionTips: []
+        };
+      }
+
+      // Analyze methods used
+      const methodBuckets = {};
+      const triggerBuckets = {};
+      const satisfactionScores = [];
+      let quickCount = 0;
+
+      for (const relapse of relapses) {
+        // Count methods
+        if (relapse.methods && Array.isArray(relapse.methods)) {
+          relapse.methods.forEach(method => {
+            methodBuckets[method] = (methodBuckets[method] || 0) + 1;
+          });
+        }
+
+        // Count triggers
+        const trigger = relapse.trigger || 'unknown';
+        triggerBuckets[trigger] = (triggerBuckets[trigger] || 0) + 1;
+
+        // Track satisfaction
+        if (relapse.satisfaction) {
+          const score = relapse.satisfaction === 'unsatisfying' ? 1 :
+                       relapse.satisfaction === 'neutral' ? 2 :
+                       relapse.satisfaction === 'satisfying' ? 3 :
+                       relapse.satisfaction === 'very' ? 4 :
+                       relapse.satisfaction === 'intense' ? 5 : 0;
+          if (score > 0) satisfactionScores.push(score);
+        }
+
+        // Count quick relapses (under 5 minutes)
+        if (relapse.duration === 'quick') {
+          quickCount++;
+        }
+      }
+
+      // Find most common method and trigger
+      const topMethod = Object.entries(methodBuckets).sort(([,a], [,b]) => b - a)[0];
+      const topTrigger = Object.entries(triggerBuckets).sort(([,a], [,b]) => b - a)[0];
+
+      const commonMethod = topMethod ? `${topMethod[0]} (${Math.round((topMethod[1] / relapses.length) * 100)}%)` : '--';
+      const triggerLabel = topTrigger ? `${topTrigger[0]} (${Math.round((topTrigger[1] / relapses.length) * 100)}%)` : '--';
+
+      const avgSatisfaction = satisfactionScores.length > 0
+        ? (satisfactionScores.reduce((a, b) => a + b, 0) / satisfactionScores.length).toFixed(1)
+        : '--';
+
+      // Generate insights and prevention tips
+      const insights = [];
+      const preventionTips = [];
+
+      if (topMethod) {
+        insights.push(`Most common relapse method: ${topMethod[0]} (${topMethod[1]} times)`);
+        if (topMethod[0] === 'porn') {
+          preventionTips.push('Block porn sites and use content filters. Replace screen time with physical activities.');
+        } else if (topMethod[0] === 'masturbation') {
+          preventionTips.push('Create physical barriers and friction. Keep hands busy with hobbies or exercise.');
+        } else if (topMethod[0] === 'ai-bots') {
+          preventionTips.push('Delete AI chat apps. Block AI-related websites and replace with real social interactions.');
+        }
+      }
+
+      if (topTrigger && topTrigger[0] !== 'unknown') {
+        insights.push(`Primary trigger: ${topTrigger[0]} (${topTrigger[1]} times)`);
+        const trigger = topTrigger[0];
+        if (trigger === 'boredom') {
+          preventionTips.push('Build a boredom-busting toolkit: exercise, reading, creative hobbies, social activities.');
+        } else if (trigger === 'stress') {
+          preventionTips.push('Develop stress management: meditation, exercise, talking to friends, professional help.');
+        } else if (trigger === 'loneliness') {
+          preventionTips.push('Build connection: join communities, call friends regularly, volunteer, find local groups.');
+        } else if (trigger === 'tired') {
+          preventionTips.push('Prioritize sleep and energy: consistent bedtime, limit screens, exercise regularly.');
+        } else if (trigger === 'social-media') {
+          preventionTips.push('Set social media boundaries: app time limits, phone away during certain hours.');
+        }
+      }
+
+      if (quickCount > relapses.length * 0.5) {
+        insights.push('Many relapses happen quickly - this suggests impulse control needs strengthening.');
+        preventionTips.push('Add friction for quick impulses: wait 10 minutes, leave the situation, call someone.');
+      }
+
+      if (satisfactionScores.length > 0) {
+        const avgScore = satisfactionScores.reduce((a, b) => a + b, 0) / satisfactionScores.length;
+        if (avgScore < 3) {
+          insights.push('Relapses are often unsatisfying - this suggests they\'re not meeting real needs.');
+          preventionTips.push('Address root causes: boredom, stress, loneliness. Build fulfilling alternatives.');
+        }
+      }
+
+      return {
+        count: relapses.length,
+        commonMethod,
+        topTrigger: triggerLabel,
+        avgSatisfaction,
+        quickCount,
+        insights,
+        preventionTips
+      };
+    }
+
+    function renderRelapseInsights() {
+      const countEl = document.getElementById('relapse-insights-count');
+      const methodEl = document.getElementById('relapse-common-method');
+      const triggerEl = document.getElementById('relapse-top-trigger');
+      const satisfactionEl = document.getElementById('relapse-avg-satisfaction');
+      const quickEl = document.getElementById('relapse-quick-count');
+      const listEl = document.getElementById('relapse-insights-list');
+
+      if (!countEl || !methodEl || !triggerEl || !satisfactionEl || !quickEl || !listEl) return;
+
+      const insights = getRelapseInsights();
+      countEl.textContent = `${insights.count} log${insights.count === 1 ? '' : 's'}`;
+      methodEl.textContent = insights.commonMethod;
+      triggerEl.textContent = insights.topTrigger;
+      satisfactionEl.textContent = insights.avgSatisfaction;
+      quickEl.textContent = insights.quickCount;
+
+      if (insights.count === 0) {
+        listEl.innerHTML = '<div class="text-gray-500 text-sm">Log relapses to understand your patterns and build prevention strategies.</div>';
+        return;
+      }
+
+      listEl.innerHTML = `
+        ${insights.insights.map(insight => `
+          <div class="rounded-xl border border-white/5 bg-black/20 p-4">
+            <div class="text-gray-500 text-xs uppercase tracking-[0.2em] mb-2">Pattern</div>
+            <div class="text-off-white">${insight}</div>
+          </div>
+        `).join('')}
+        ${insights.preventionTips.map(tip => `
           <div class="rounded-xl border border-electric-cyan/15 bg-electric-cyan/5 p-4 text-sm text-off-white">${tip}</div>
         `).join('')}
       `;
