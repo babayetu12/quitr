@@ -878,6 +878,16 @@
             </button>
           </div>
           <input type="file" id="import-file" class="hidden" accept=".json">
+
+          <!-- Debug Tools -->
+          <div class="mt-4 border-t border-white/10 pt-4">
+            <p class="text-xs text-gray-500 mb-2">Debug Tools (if data issues)</p>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="debugData()" class="text-xs px-3 py-1 bg-gray-700 rounded hover:bg-gray-600 transition-colors">Debug Info</button>
+              <button onclick="exportData()" class="text-xs px-3 py-1 bg-electric-cyan text-deep-charcoal rounded hover:opacity-80 transition-colors">Export Data</button>
+              <button onclick="clearAllData()" class="text-xs px-3 py-1 bg-soft-rose rounded hover:bg-soft-rose/80 transition-colors">Clear All Data</button>
+            </div>
+          </div>
         </section>
 
       </div>
@@ -1151,6 +1161,55 @@
     let syncInProgress = false;
     let pendingSyncTimer = null;
 
+    // === DEBUG FUNCTIONS ===
+    function debugData() {
+      console.log('=== DEBUG INFO ===');
+      console.log('Current user:', currentUser);
+      console.log('State:', state);
+      console.log('LocalStorage keys:', Object.keys(localStorage));
+      console.log('Auth ready:', authReady);
+      alert(`Debug info logged to console. Urges: ${state.urges.length}, Relapses: ${state.relapses.length}, User: ${currentUser ? currentUser.email : 'None'}`);
+    }
+
+    function exportData() {
+      const data = JSON.stringify(state, null, 2);
+      navigator.clipboard.writeText(data).then(() => {
+        showToast('Data copied to clipboard');
+      }).catch(() => {
+        // Fallback for older browsers
+        const textarea = document.createElement('textarea');
+        textarea.value = data;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showToast('Data copied to clipboard');
+      });
+    }
+
+    function clearAllData() {
+      if (confirm('This will delete ALL your data. Are you sure?')) {
+        localStorage.clear();
+        state = {
+          startTime: null,
+          streaks: [],
+          currentStreak: { start: null, urgesResisted: 0 },
+          relapses: [],
+          urges: [],
+          naturals: [],
+          journals: [],
+          milestones: [],
+          reasons: [],
+          goal: null,
+          lastModified: Date.now()
+        };
+        updateUI();
+        renderActivityList();
+        renderAnalytics();
+        showToast('All data cleared');
+      }
+    }
+
     // === INITIALIZATION ===
     async function init() {
       loadState();
@@ -1171,6 +1230,25 @@
       if (state.startTime) startCounter();
       renderActivityList();
       renderAnalytics();
+
+      // Add debug buttons to analytics page
+      setTimeout(() => {
+        const analyticsSection = document.querySelector('#page-analytics .glass:last-child');
+        if (analyticsSection) {
+          const debugDiv = document.createElement('div');
+          debugDiv.innerHTML = `
+            <div class="border-t border-white/10 pt-4 mt-6">
+              <p class="text-xs text-gray-500 mb-2">Debug Tools</p>
+              <div class="flex flex-wrap gap-2">
+                <button onclick="debugData()" class="text-xs px-3 py-1 bg-gray-700 rounded">Debug Info</button>
+                <button onclick="exportData()" class="text-xs px-3 py-1 bg-electric-cyan text-deep-charcoal rounded">Export Data</button>
+                <button onclick="clearAllData()" class="text-xs px-3 py-1 bg-soft-rose rounded">Clear All</button>
+              </div>
+            </div>
+          `;
+          analyticsSection.appendChild(debugDiv);
+        }
+      }, 1000);
     }
 
     function loadState() {
@@ -1179,10 +1257,28 @@
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          state = { ...state, ...parsed };
+          // Ensure backward compatibility with old data structure
+          state = {
+            ...state,
+            ...parsed,
+            // Add default values for new fields if missing
+            goal: parsed.goal || null,
+            // Ensure arrays exist
+            urges: Array.isArray(parsed.urges) ? parsed.urges : [],
+            relapses: Array.isArray(parsed.relapses) ? parsed.relapses : [],
+            naturals: Array.isArray(parsed.naturals) ? parsed.naturals : [],
+            journals: Array.isArray(parsed.journals) ? parsed.journals : [],
+            milestones: Array.isArray(parsed.milestones) ? parsed.milestones : [],
+            reasons: Array.isArray(parsed.reasons) ? parsed.reasons : [],
+            streaks: Array.isArray(parsed.streaks) ? parsed.streaks : []
+          };
+          console.log('[DATA] Loaded state with', state.urges.length, 'urges,', state.relapses.length, 'relapses');
         } catch (e) {
           console.error('Failed to load state:', e);
+          showToast('Error loading data. Starting fresh.');
         }
+      } else {
+        console.log('[DATA] No saved state found, starting fresh');
       }
     }
 
